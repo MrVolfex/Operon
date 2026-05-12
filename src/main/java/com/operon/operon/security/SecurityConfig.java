@@ -35,7 +35,7 @@ public class SecurityConfig {
         JwtAuthFilter workerJwtFilter = new JwtAuthFilter(workerDetailsService, jwtUtil);
 
         http.securityMatcher(
-                        "/auth/worker/**",
+                        "/auth/worker/**","/api/workers/**",
                         "/api/work-orders/**", "/api/order-items/**",
                         "/api/parts/**",      "/api/service-types/**",
                         "/api/dashboard/**",  "/api/invoices/**",
@@ -51,7 +51,7 @@ public class SecurityConfig {
                                 "/api/parts/**","/api/service-types/**"
                         ).hasRole("MECHANIC").requestMatchers(
                                 "/api/dashboard/**","/api/invoices/**",
-                                "/api/clients/**","/api/appointments/**"
+                                "/api/clients/**","/api/appointments/**","/api/workers/**"
                         ).hasRole("OWNER").anyRequest().authenticated()
                 ).addFilterBefore(workerJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
