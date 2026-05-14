@@ -29,7 +29,7 @@ public class WorkerController {
     }
     @PostMapping
     public ResponseEntity<WorkerDTO> createWorker(@RequestBody @Valid WorkerCreateRequest request){
-        return ResponseEntity.status(201).body(workerService.CreateWorker(request));
+        return ResponseEntity.status(201).body(workerService.createWorker(request));
     }
     @PutMapping("/{id}")
     public ResponseEntity<WorkerDTO> updateWorker(@PathVariable Long id, @RequestBody @Valid WorkerCreateRequest request){

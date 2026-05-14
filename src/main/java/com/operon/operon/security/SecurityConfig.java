@@ -4,6 +4,7 @@ package com.operon.operon.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/worker/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/clients").permitAll()
                         .requestMatchers(
                                 "/api/work-orders/**", "/api/order-items/**",
                                 "/api/parts/**","/api/service-types/**"
@@ -68,7 +70,7 @@ public class SecurityConfig {
                         "/auth/client/**",
                         "/api/vehicles/**",
                         "/api/notifications/**",
-                        "/api/client-orders/**"
+                        "/api/client-order-parts/**"
                 ).csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

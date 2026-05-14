@@ -42,7 +42,7 @@ public class WorkerService {
         return toDTO(worker);
     }
 
-    public WorkerDTO CreateWorker (WorkerCreateRequest request){
+    public WorkerDTO createWorker (WorkerCreateRequest request){
         if(workerRepository.existsByUsername(request.getUsername())){
             throw new RuntimeException("Username already exists: " + request.getUsername());
         }
