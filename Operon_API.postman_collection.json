@@ -1,0 +1,895 @@
+{
+  "info": {
+    "name": "Operon API",
+    "description": "Postman kolekcija za Operon auto servis API.\n\nTokeni se automatski čuvaju nakon login-a.\nVarijable: base_url, worker_token, client_token",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
+    { "key": "worker_token", "value": "", "type": "string" },
+    { "key": "client_token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Worker Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('worker_token', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"owner_username\",\n  \"password\": \"lozinka\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/auth/worker/login", "host": ["{{base_url}}"], "path": ["auth","worker","login"] }
+          }
+        },
+        {
+          "name": "Client Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('client_token', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"client_username\",\n  \"password\": \"lozinka\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/auth/client/login", "host": ["{{base_url}}"], "path": ["auth","client","login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clients  [OWNER]",
+      "item": [
+        {
+          "name": "Register Client (javno)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Marko\",\n  \"lastName\": \"Markovic\",\n  \"username\": \"marko123\",\n  \"password\": \"lozinka123\",\n  \"phone\": \"065123456\",\n  \"email\": \"marko@email.com\",\n  \"clientType\": \"INDIVIDUAL\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/clients", "host": ["{{base_url}}"], "path": ["api","clients"] }
+          }
+        },
+        {
+          "name": "Get All Clients",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/clients", "host": ["{{base_url}}"], "path": ["api","clients"] }
+          }
+        },
+        {
+          "name": "Get Client by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/clients/1", "host": ["{{base_url}}"], "path": ["api","clients","1"] }
+          }
+        },
+        {
+          "name": "Get Clients by Type",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/clients/type/INDIVIDUAL", "host": ["{{base_url}}"], "path": ["api","clients","type","INDIVIDUAL"] }
+          }
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Marko\",\n  \"lastName\": \"Markovic\",\n  \"username\": \"marko123\",\n  \"password\": \"novaLozinka\",\n  \"phone\": \"065999888\",\n  \"email\": \"marko@email.com\",\n  \"clientType\": \"INDIVIDUAL\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/clients/1", "host": ["{{base_url}}"], "path": ["api","clients","1"] }
+          }
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/clients/1", "host": ["{{base_url}}"], "path": ["api","clients","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workers  [OWNER]",
+      "item": [
+        {
+          "name": "Get All Workers",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/workers", "host": ["{{base_url}}"], "path": ["api","workers"] }
+          }
+        },
+        {
+          "name": "Get Worker by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/workers/1", "host": ["{{base_url}}"], "path": ["api","workers","1"] }
+          }
+        },
+        {
+          "name": "Get Workers by Role",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/workers/role/MECHANIC", "host": ["{{base_url}}"], "path": ["api","workers","role","MECHANIC"] }
+          }
+        },
+        {
+          "name": "Create Worker",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Petar\",\n  \"lastName\": \"Petrovic\",\n  \"email\": \"petar@operon.com\",\n  \"username\": \"petar_meh\",\n  \"password\": \"lozinka123\",\n  \"phone\": \"066111222\",\n  \"role\": \"MECHANIC\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/workers", "host": ["{{base_url}}"], "path": ["api","workers"] }
+          }
+        },
+        {
+          "name": "Update Worker",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Petar\",\n  \"lastName\": \"Petrovic\",\n  \"email\": \"petar@operon.com\",\n  \"username\": \"petar_meh\",\n  \"password\": \"novaLozinka\",\n  \"phone\": \"066333444\",\n  \"role\": \"OWNER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/workers/1", "host": ["{{base_url}}"], "path": ["api","workers","1"] }
+          }
+        },
+        {
+          "name": "Deactivate Worker",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/workers/1", "host": ["{{base_url}}"], "path": ["api","workers","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehicles  [CLIENT]",
+      "item": [
+        {
+          "name": "Get All Vehicles",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/vehicles", "host": ["{{base_url}}"], "path": ["api","vehicles"] }
+          }
+        },
+        {
+          "name": "Get Vehicle by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/vehicles/1", "host": ["{{base_url}}"], "path": ["api","vehicles","1"] }
+          }
+        },
+        {
+          "name": "Get Vehicle by VIN",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/vehicles/vin/1HGCM82633A004352", "host": ["{{base_url}}"], "path": ["api","vehicles","vin","1HGCM82633A004352"] }
+          }
+        },
+        {
+          "name": "Get Vehicles by Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/vehicles/client/1", "host": ["{{base_url}}"], "path": ["api","vehicles","client","1"] }
+          }
+        },
+        {
+          "name": "Create Vehicle",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"licensePlate\": \"BL123AB\",\n  \"vin\": \"1HGCM82633A004352\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2020,\n  \"mileage\": 45000,\n  \"registrationDate\": \"2023-01-15\",\n  \"registrationExpiry\": \"2025-01-15\",\n  \"clientId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/vehicles", "host": ["{{base_url}}"], "path": ["api","vehicles"] }
+          }
+        },
+        {
+          "name": "Update Vehicle",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"licensePlate\": \"BL123AB\",\n  \"vin\": \"1HGCM82633A004352\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2020,\n  \"mileage\": 50000,\n  \"registrationDate\": \"2023-01-15\",\n  \"registrationExpiry\": \"2026-01-15\",\n  \"clientId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/vehicles/1", "host": ["{{base_url}}"], "path": ["api","vehicles","1"] }
+          }
+        },
+        {
+          "name": "Delete Vehicle",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/vehicles/1", "host": ["{{base_url}}"], "path": ["api","vehicles","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments  [OWNER]",
+      "item": [
+        {
+          "name": "Get All Appointments",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/appointments", "host": ["{{base_url}}"], "path": ["api","appointments"] }
+          }
+        },
+        {
+          "name": "Get Appointment by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/appointments/1", "host": ["{{base_url}}"], "path": ["api","appointments","1"] }
+          }
+        },
+        {
+          "name": "Get Appointments by Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/appointments/client/1", "host": ["{{base_url}}"], "path": ["api","appointments","client","1"] }
+          }
+        },
+        {
+          "name": "Get Appointments by Vehicle",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/appointments/vehicle/1", "host": ["{{base_url}}"], "path": ["api","appointments","vehicle","1"] }
+          }
+        },
+        {
+          "name": "Get Appointments by Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/appointments/status/PENDING", "host": ["{{base_url}}"], "path": ["api","appointments","status","PENDING"] }
+          }
+        },
+        {
+          "name": "Get Appointments by Client and Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/appointments/client/1/status/PENDING", "host": ["{{base_url}}"], "path": ["api","appointments","client","1","status","PENDING"] }
+          }
+        },
+        {
+          "name": "Create Appointment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledAt\": \"2026-06-01T10:00:00\",\n  \"status\": \"PENDING\",\n  \"note\": \"Redovni servis\",\n  \"clientId\": 1,\n  \"vehicleId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/appointments", "host": ["{{base_url}}"], "path": ["api","appointments"] }
+          }
+        },
+        {
+          "name": "Update Appointment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledAt\": \"2026-06-02T14:00:00\",\n  \"status\": \"CONFIRMED\",\n  \"note\": \"Pomjeren termin\",\n  \"clientId\": 1,\n  \"vehicleId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/appointments/1", "host": ["{{base_url}}"], "path": ["api","appointments","1"] }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": { "raw": "{{base_url}}/api/appointments/1/cancel", "host": ["{{base_url}}"], "path": ["api","appointments","1","cancel"] }
+          }
+        },
+        {
+          "name": "Delete Appointment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/appointments/1", "host": ["{{base_url}}"], "path": ["api","appointments","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parts  [MECHANIC]",
+      "item": [
+        {
+          "name": "Get All Parts",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/parts", "host": ["{{base_url}}"], "path": ["api","parts"] }
+          }
+        },
+        {
+          "name": "Get Part by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/parts/1", "host": ["{{base_url}}"], "path": ["api","parts","1"] }
+          }
+        },
+        {
+          "name": "Get Part by Part Number",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/parts/part-number/OIL-5W40", "host": ["{{base_url}}"], "path": ["api","parts","part-number","OIL-5W40"] }
+          }
+        },
+        {
+          "name": "Get Parts by Brand",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/parts/brand/Bosch", "host": ["{{base_url}}"], "path": ["api","parts","brand","Bosch"] }
+          }
+        },
+        {
+          "name": "Get Low Stock Parts",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/parts/low-stock?threshold=5",
+              "host": ["{{base_url}}"],
+              "path": ["api","parts","low-stock"],
+              "query": [{ "key": "threshold", "value": "5" }]
+            }
+          }
+        },
+        {
+          "name": "Create Part",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Motorno ulje 5W40\",\n  \"partNumber\": \"OIL-5W40\",\n  \"price\": 25.99,\n  \"stockQuantity\": 50,\n  \"brand\": \"Castrol\",\n  \"model\": \"EDGE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/parts", "host": ["{{base_url}}"], "path": ["api","parts"] }
+          }
+        },
+        {
+          "name": "Update Part",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Motorno ulje 5W40\",\n  \"partNumber\": \"OIL-5W40\",\n  \"price\": 27.99,\n  \"stockQuantity\": 45,\n  \"brand\": \"Castrol\",\n  \"model\": \"EDGE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/parts/1", "host": ["{{base_url}}"], "path": ["api","parts","1"] }
+          }
+        },
+        {
+          "name": "Delete Part",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/parts/1", "host": ["{{base_url}}"], "path": ["api","parts","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Types  [MECHANIC]",
+      "item": [
+        {
+          "name": "Get All Service Types",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/service-types", "host": ["{{base_url}}"], "path": ["api","service-types"] }
+          }
+        },
+        {
+          "name": "Get Service Type by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/service-types/1", "host": ["{{base_url}}"], "path": ["api","service-types","1"] }
+          }
+        },
+        {
+          "name": "Get Service Types by Type",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/service-types/type/Zamjena%20ulja", "host": ["{{base_url}}"], "path": ["api","service-types","type","Zamjena%20ulja"] }
+          }
+        },
+        {
+          "name": "Create Service Type",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Zamjena ulja\",\n  \"price\": 30.00,\n  \"duration\": 30\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/service-types", "host": ["{{base_url}}"], "path": ["api","service-types"] }
+          }
+        },
+        {
+          "name": "Update Service Type",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Zamjena ulja i filtera\",\n  \"price\": 45.00,\n  \"duration\": 45\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/service-types/1", "host": ["{{base_url}}"], "path": ["api","service-types","1"] }
+          }
+        },
+        {
+          "name": "Delete Service Type",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/service-types/1", "host": ["{{base_url}}"], "path": ["api","service-types","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Work Orders  [MECHANIC]",
+      "item": [
+        {
+          "name": "Get All Work Orders",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/work-orders", "host": ["{{base_url}}"], "path": ["api","work-orders"] }
+          }
+        },
+        {
+          "name": "Get Work Order by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/work-orders/1", "host": ["{{base_url}}"], "path": ["api","work-orders","1"] }
+          }
+        },
+        {
+          "name": "Get Work Orders by Vehicle",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/work-orders/vehicle/1", "host": ["{{base_url}}"], "path": ["api","work-orders","vehicle","1"] }
+          }
+        },
+        {
+          "name": "Get Work Orders by Worker",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/work-orders/worker/1", "host": ["{{base_url}}"], "path": ["api","work-orders","worker","1"] }
+          }
+        },
+        {
+          "name": "Get Work Orders by Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/work-orders/status/OPEN", "host": ["{{base_url}}"], "path": ["api","work-orders","status","OPEN"] }
+          }
+        },
+        {
+          "name": "Create Work Order",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workerId\": 1,\n  \"vehicleId\": 1,\n  \"description\": \"Zamjena ulja i filtera\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/work-orders", "host": ["{{base_url}}"], "path": ["api","work-orders"] }
+          }
+        },
+        {
+          "name": "Update Work Order Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/work-orders/1/status?status=IN_PROGRESS",
+              "host": ["{{base_url}}"],
+              "path": ["api","work-orders","1","status"],
+              "query": [{ "key": "status", "value": "IN_PROGRESS" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Work Order",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/work-orders/1", "host": ["{{base_url}}"], "path": ["api","work-orders","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Items  [MECHANIC]",
+      "item": [
+        {
+          "name": "Get All Order Items",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/order-items", "host": ["{{base_url}}"], "path": ["api","order-items"] }
+          }
+        },
+        {
+          "name": "Get Order Item by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/order-items/1", "host": ["{{base_url}}"], "path": ["api","order-items","1"] }
+          }
+        },
+        {
+          "name": "Get Order Items by Work Order",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/order-items/work-order/1", "host": ["{{base_url}}"], "path": ["api","order-items","work-order","1"] }
+          }
+        },
+        {
+          "name": "Get Order Items by Part",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/order-items/part/1", "host": ["{{base_url}}"], "path": ["api","order-items","part","1"] }
+          }
+        },
+        {
+          "name": "Create Order Item (Part)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workOrderId\": 1,\n  \"quantity\": 2,\n  \"discount\": 0.0,\n  \"partId\": 1,\n  \"serviceTypeId\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/order-items", "host": ["{{base_url}}"], "path": ["api","order-items"] }
+          }
+        },
+        {
+          "name": "Create Order Item (Service)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workOrderId\": 1,\n  \"quantity\": 1,\n  \"discount\": 0.0,\n  \"partId\": null,\n  \"serviceTypeId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/order-items", "host": ["{{base_url}}"], "path": ["api","order-items"] }
+          }
+        },
+        {
+          "name": "Delete Order Item",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/order-items/1", "host": ["{{base_url}}"], "path": ["api","order-items","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices  [OWNER]",
+      "item": [
+        {
+          "name": "Get All Invoices",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/invoices", "host": ["{{base_url}}"], "path": ["api","invoices"] }
+          }
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/invoices/1", "host": ["{{base_url}}"], "path": ["api","invoices","1"] }
+          }
+        },
+        {
+          "name": "Get Invoice by Work Order",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/invoices/work-order/1", "host": ["{{base_url}}"], "path": ["api","invoices","work-order","1"] }
+          }
+        },
+        {
+          "name": "Get Invoices by Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/invoices/client/1", "host": ["{{base_url}}"], "path": ["api","invoices","client","1"] }
+          }
+        },
+        {
+          "name": "Get Unpaid Invoices",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/invoices/unpaid", "host": ["{{base_url}}"], "path": ["api","invoices","unpaid"] }
+          }
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workOrderId\": 1,\n  \"clientId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/invoices", "host": ["{{base_url}}"], "path": ["api","invoices"] }
+          }
+        },
+        {
+          "name": "Mark Invoice as Paid",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": { "raw": "{{base_url}}/api/invoices/1/pay", "host": ["{{base_url}}"], "path": ["api","invoices","1","pay"] }
+          }
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{worker_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/invoices/1", "host": ["{{base_url}}"], "path": ["api","invoices","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications  [CLIENT]",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/notifications", "host": ["{{base_url}}"], "path": ["api","notifications"] }
+          }
+        },
+        {
+          "name": "Get Notification by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/notifications/1", "host": ["{{base_url}}"], "path": ["api","notifications","1"] }
+          }
+        },
+        {
+          "name": "Get Notifications by Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/notifications/client/1", "host": ["{{base_url}}"], "path": ["api","notifications","client","1"] }
+          }
+        },
+        {
+          "name": "Get Undelivered Notifications by Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/notifications/client/1/undelivered", "host": ["{{base_url}}"], "path": ["api","notifications","client","1","undelivered"] }
+          }
+        },
+        {
+          "name": "Create Notification",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": 1,\n  \"content\": \"Vas automobil je spreman za preuzimanje.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/notifications", "host": ["{{base_url}}"], "path": ["api","notifications"] }
+          }
+        },
+        {
+          "name": "Mark Notification as Delivered",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": { "raw": "{{base_url}}/api/notifications/1/deliver", "host": ["{{base_url}}"], "path": ["api","notifications","1","deliver"] }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/notifications/1", "host": ["{{base_url}}"], "path": ["api","notifications","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client Order Parts  [CLIENT]",
+      "description": "Dijelovi koje klijent naručuje. Zahtijeva client_token.",
+      "item": [
+        {
+          "name": "Get All Client Order Parts",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/client-order-parts", "host": ["{{base_url}}"], "path": ["api","client-order-parts"] }
+          }
+        },
+        {
+          "name": "Get Client Order Part by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/client-order-parts/1", "host": ["{{base_url}}"], "path": ["api","client-order-parts","1"] }
+          }
+        },
+        {
+          "name": "Get Client Order Parts by Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/client-order-parts/client/1", "host": ["{{base_url}}"], "path": ["api","client-order-parts","client","1"] }
+          }
+        },
+        {
+          "name": "Get Client Order Parts by Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/client-order-parts/status/PENDING", "host": ["{{base_url}}"], "path": ["api","client-order-parts","status","PENDING"] }
+          }
+        },
+        {
+          "name": "Get Client Order Parts by Client and Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/client-order-parts/client/1/status/PENDING", "host": ["{{base_url}}"], "path": ["api","client-order-parts","client","1","status","PENDING"] }
+          }
+        },
+        {
+          "name": "Create Client Order Part",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": 1,\n  \"partId\": 1,\n  \"quantity\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/client-order-parts", "host": ["{{base_url}}"], "path": ["api","client-order-parts"] }
+          }
+        },
+        {
+          "name": "Update Client Order Part Status",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/client-order-parts/1/status?status=CONFIRMED",
+              "host": ["{{base_url}}"],
+              "path": ["api","client-order-parts","1","status"],
+              "query": [{ "key": "status", "value": "CONFIRMED" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Client Order Part",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{client_token}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/client-order-parts/1", "host": ["{{base_url}}"], "path": ["api","client-order-parts","1"] }
+          }
+        }
+      ]
+    }
+  ]
+}
