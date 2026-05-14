@@ -20,7 +20,6 @@ public class WorkOrder {
     @Column(nullable = false)
     private LocalDateTime openedAt;
 
-    @Column(nullable = false)
     private LocalDateTime closedAt;
 
     @Enumerated(EnumType.STRING)
