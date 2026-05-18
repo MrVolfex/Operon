@@ -33,3 +33,4 @@ build/
 .vscode/
 application-local.properties
 CLAUDE.md
+Operon_API.postman_collection.json

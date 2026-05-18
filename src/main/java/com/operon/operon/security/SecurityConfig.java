@@ -11,17 +11,27 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final ClientDetailsService clientDetailsService;
     private final WorkerDetailsService workerDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtUtil jwtUtil, ClientDetailsService clientDetailsService, WorkerDetailsService workerDetailsService) {
+    public SecurityConfig(JwtUtil jwtUtil, ClientDetailsService clientDetailsService,
+                          WorkerDetailsService workerDetailsService,
+                          CorsConfigurationSource corsConfigurationSource) {
         this.jwtUtil = jwtUtil;
         this.clientDetailsService = clientDetailsService;
         this.workerDetailsService = workerDetailsService;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -42,6 +52,7 @@ public class SecurityConfig {
                         "/api/dashboard/**",  "/api/invoices/**",
                         "/api/clients/**",    "/api/appointments/**"
                 )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -71,7 +82,9 @@ public class SecurityConfig {
                         "/api/vehicles/**",
                         "/api/notifications/**",
                         "/api/client-order-parts/**"
-                ).csrf(csrf -> csrf.disable())
+                )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
