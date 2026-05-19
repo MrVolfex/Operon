@@ -39,19 +39,23 @@ public class AuthController {
 
     @PostMapping("/worker/login")
     public ResponseEntity<LoginResponse> workerLogin(@RequestBody LoginRequest request) {
-        workerAuthManager.authenticate(
+        var auth = workerAuthManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
         String token = jwtUtil.generateToken(request.getUsername());
-        return ResponseEntity.ok(new LoginResponse(token));
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(new LoginResponse(token, role));
     }
+
 
     @PostMapping("/client/login")
     public ResponseEntity<LoginResponse> clientLogin(@RequestBody LoginRequest request) {
-        clientAuthManager.authenticate(
+        var auth = clientAuthManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
         String token = jwtUtil.generateToken(request.getUsername());
-        return ResponseEntity.ok(new LoginResponse(token));
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(new LoginResponse(token, role));
     }
+
 }

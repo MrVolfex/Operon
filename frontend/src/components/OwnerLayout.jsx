@@ -2,12 +2,14 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { to: '/worker/dashboard', label: 'Work Orders' },
-  { to: '/worker/parts', label: 'Parts' },
-  { to: '/worker/appointments', label: 'Appointments' },
+  { to: '/owner/dashboard', label: 'Dashboard' },
+  { to: '/owner/workers', label: 'Workers' },
+  { to: '/owner/clients', label: 'Clients' },
+  { to: '/owner/appointments', label: 'Appointments' },
+  { to: '/owner/invoices', label: 'Invoices' },
 ];
 
-export default function Layout({ children }) {
+export default function OwnerLayout({ children }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -89,7 +91,7 @@ export default function Layout({ children }) {
           zIndex: 10,
         }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
-            Worker Portal
+            Owner Portal
           </span>
         </header>
 

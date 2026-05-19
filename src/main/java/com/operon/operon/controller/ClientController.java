@@ -34,7 +34,8 @@ public class ClientController {
     public ResponseEntity<LoginResponse> createClient(@RequestBody @Valid ClientCreateRequest request) {
         clientService.createClient(request);
         String token = jwtUtil.generateToken(request.getUsername());
-        return ResponseEntity.status(201).body(new LoginResponse(token));
+
+        return ResponseEntity.status(201).body(new LoginResponse(token, "CLIENT"));
     }
 
     @PutMapping("/{id}")

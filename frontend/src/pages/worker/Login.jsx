@@ -17,8 +17,15 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post('/auth/worker/login', { username, password });
-      login(res.data.token, res.data.role);
-      navigate('/dashboard');
+      const role = res.data.role;
+      login(res.data.token, role);
+
+      if (role === 'ROLE_OWNER') {
+        navigate('/owner/dashboard');
+      } else {
+        navigate('/worker/dashboard');
+      }
+
     } catch (err) {
       setError('Wrong username or password.');
     } finally {
