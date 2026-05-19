@@ -20,7 +20,7 @@ export default function Login() {
       login(res.data.token, res.data.role);
       navigate('/dashboard');
     } catch (err) {
-      setError('Pogrešno korisničko ime ili lozinka.');
+      setError('Wrong username or password.');
     } finally {
       setLoading(false);
     }
@@ -46,14 +46,14 @@ export default function Login() {
             OPER<span style={{ color: 'var(--accent)' }}>ON</span>
           </h1>
           <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 6 }}>
-            Pristup radničkom portalu
+            Access Worker Portal
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
-              Korisničko ime
+              Username
             </label>
             <input
               type="text"
@@ -74,7 +74,7 @@ export default function Login() {
 
           <div style={{ marginBottom: 24 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
-              Lozinka
+              Password
             </label>
             <input
               type="password"

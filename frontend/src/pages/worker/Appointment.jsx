@@ -3,28 +3,26 @@ import Layout from '../../components/Layout';
 import api from '../../api/axios';
 
 const statusLabel = {
-  OPEN:        'Open',
-  IN_PROGRESS: 'In Progress',
-  COMPLETED:   'Completed',
-  CANCELLED:   'Cancelled',
+  PENDING:   'Pending',
+  CONFIRMED: 'Confirmed',
+  CANCELLED: 'Cancelled',
 };
 
 const statusStyle = {
-  OPEN:        { background: 'var(--blue-bg)',   color: 'var(--blue)'   },
-  IN_PROGRESS: { background: 'var(--yellow-bg)', color: 'var(--yellow)' },
-  COMPLETED:   { background: 'var(--green-bg)',  color: 'var(--green)'  },
-  CANCELLED:   { background: 'var(--red-bg)',    color: 'var(--red)'    },
+  PENDING:   { background: 'var(--yellow-bg)', color: 'var(--yellow)' },
+  CONFIRMED: { background: 'var(--green-bg)',  color: 'var(--green)'  },
+  CANCELLED: { background: 'var(--red-bg)',    color: 'var(--red)'    },
 };
 
-export default function Dashboard() {
-  const [orders, setOrders] = useState([]);
+export default function Appointment() {
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get('/api/work-orders')
-      .then(res => setOrders(res.data))
-      .catch(() => setError('Error loading orders.'))
+    api.get('/api/appointments')
+      .then(res => setAppointments(res.data))
+      .catch(() => setError('Error loading appointments.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -32,15 +30,15 @@ export default function Dashboard() {
     <Layout>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
-          Work Orders
+          Schedule
         </h2>
         <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>
-          View all work orders
+          Upcoming appointments
         </p>
       </div>
 
       {loading && <p style={{ color: 'var(--text2)' }}>Loading...</p>}
-      {error   && <p style={{ color: 'var(--red)' }}>{error}</p>}
+      {error && <p style={{ color: 'var(--red)' }}>{error}</p>}
 
       {!loading && !error && (
         <div style={{
@@ -52,7 +50,7 @@ export default function Dashboard() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['ID', 'Vehicle', 'Status', 'Description', 'Opened'].map(h => (
+                {['ID', 'Vehicle', 'Status', 'Note', 'Scheduled At'].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px',
                     textAlign: 'left',
@@ -66,43 +64,42 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {orders.length === 0 && (
+              {appointments.length === 0 && (
                 <tr>
                   <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: 'var(--text2)' }}>
-                    No work orders available.
+                    No appointments available.
                   </td>
                 </tr>
               )}
-              {orders.map((o, i) => (
-                <tr key={o.id} style={{
-                  borderBottom: i < orders.length - 1 ? '1px solid var(--border)' : 'none',
+              {appointments.map((a, i) => (
+                <tr key={a.id} style={{
+                  borderBottom: i < appointments.length - 1 ? '1px solid var(--border)' : 'none',
                 }}>
                   <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-                    #{o.id}
+                    #{a.id}
                   </td>
                   <td style={{ padding: '14px 16px', fontSize: 14, color: 'var(--text)' }}>
-                  {o.vehicleBrand} {o.vehicleModel}
+                    {a.vehicleBrand} {a.vehicleModel}
                     <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
-                      {o.vehicleLicensePlate}
+                      {a.vehicleLicensePlate}
                     </div>
                   </td>
-
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{
-                      ...statusStyle[o.status],
+                      ...statusStyle[a.status],
                       borderRadius: 20,
                       padding: '3px 10px',
                       fontSize: 11,
                       fontWeight: 700,
                     }}>
-                      {statusLabel[o.status] ?? o.status}
+                      {statusLabel[a.status] ?? a.status}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 16px', fontSize: 14, color: 'var(--text2)', maxWidth: 200 }}>
-                    {o.description ?? '—'}
+                  <td style={{ padding: '14px 16px', fontSize: 14, color: 'var(--text2)' }}>
+                    {a.note ?? '—'}
                   </td>
                   <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text3)' }}>
-                    {o.openedAt ? new Date(o.openedAt).toLocaleDateString('sr-Latn') : '—'}
+                    {a.scheduledAt ? new Date(a.scheduledAt).toLocaleString('sr-Latn') : '—'}
                   </td>
                 </tr>
               ))}

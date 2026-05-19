@@ -84,6 +84,9 @@ public class WorkOrderService {
         dto.setWorkerId(workOrder.getWorker().getId());
 
         dto.setVehicleId(workOrder.getVehicle().getId());
+        dto.setVehicleBrand(workOrder.getVehicle().getBrand());
+        dto.setVehicleModel(workOrder.getVehicle().getModel());
+        dto.setVehicleLicensePlate(workOrder.getVehicle().getLicensePlate());
         dto.setTotal(workOrder.getTotal());
         return dto;
     }

@@ -59,13 +59,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/worker/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/clients").permitAll()
+                        .requestMatchers("/api/work-orders/**","/api/appointments/**").hasAnyRole("MECHANIC", "OWNER")
                         .requestMatchers(
-                                "/api/work-orders/**", "/api/order-items/**",
-                                "/api/parts/**","/api/service-types/**"
-                        ).hasRole("MECHANIC").requestMatchers(
-                                "/api/dashboard/**","/api/invoices/**",
-                                "/api/clients/**","/api/appointments/**","/api/workers/**"
-                        ).hasRole("OWNER").anyRequest().authenticated()
+                                "/api/order-items/**",
+                                "/api/parts/**", "/api/service-types/**"
+                        ).hasRole("MECHANIC")
+                        .requestMatchers(
+                                "/api/dashboard/**", "/api/invoices/**",
+                                "/api/clients/**", "/api/appointments/**", "/api/workers/**"
+                        ).hasRole("OWNER")
+                        .anyRequest().authenticated()
                 ).addFilterBefore(workerJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

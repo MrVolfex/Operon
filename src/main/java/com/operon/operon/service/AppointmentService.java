@@ -112,7 +112,10 @@ public class AppointmentService {
                 appointment.getStatus(),
                 appointment.getNote(),
                 appointment.getClient().getId(),
-                appointment.getVehicle().getId()
+                appointment.getVehicle().getId(),
+                appointment.getVehicle().getBrand(),
+                appointment.getVehicle().getModel(),
+                appointment.getVehicle().getLicensePlate()
         );
     }
 }

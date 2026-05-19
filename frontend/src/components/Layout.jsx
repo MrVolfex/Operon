@@ -2,9 +2,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { to: '/dashboard', label: 'Moji nalozi' },
-  { to: '/parts', label: 'Delovi' },
-  { to: '/schedule', label: 'Zakazivanje' },
+  { to: '/dashboard', label: 'Work Orders' },
+  { to: '/parts', label: 'Parts' },
+  { to: '/appointments', label: 'Appointments' },
 ];
 
 export default function Layout({ children }) {
@@ -72,7 +72,7 @@ export default function Layout({ children }) {
             textAlign: 'left',
           }}
         >
-          Odjava
+          Logout
         </button>
       </aside>
 
@@ -89,7 +89,7 @@ export default function Layout({ children }) {
           zIndex: 10,
         }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
-            Radnički portal
+            Worker Portal
           </span>
         </header>
 

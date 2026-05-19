@@ -11,15 +11,14 @@ export function AuthProvider({children}){
               localStorage.setItem('role', newRole);
               setToken(newToken);
               setRole(newRole);
-        }
-         function logout() {
-          localStorage.removeItem('token');
-          localStorage.removeItem('role');
-          setToken(null);
-          setRole(null);
-        }
-        return (
-              <AuthContext.Provider value={{ token, role, login, logout}}> {children}</AuthContext.Provider>);
+          }
+        function logout() {
+              localStorage.removeItem('token');
+              localStorage.removeItem('role');
+              setToken(null);
+              setRole(null);
+          }
+        return (<AuthContext.Provider value={{ token, role, login, logout}}> {children}</AuthContext.Provider>);
 
 }
 export function useAuth() {

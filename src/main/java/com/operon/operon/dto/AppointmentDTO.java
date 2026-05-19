@@ -15,4 +15,9 @@ public class AppointmentDTO {
     private String note;
     private Long clientId;
     private Long vehicleId;
+
+    private String vehicleBrand;
+    private String vehicleModel;
+    private String vehicleLicensePlate;
+
 }
