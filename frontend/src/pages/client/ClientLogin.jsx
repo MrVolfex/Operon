@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 
-export default function Login() {
+export default function ClientLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,17 +16,10 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post('/auth/worker/login', { username, password });
-      const role = res.data.role;
-      login(res.data.token, role);
-
-      if (role === 'ROLE_OWNER') {
-        navigate('/owner/dashboard');
-      } else {
-        navigate('/worker/dashboard');
-      }
-
-    } catch (err) {
+      const res = await api.post('/auth/client/login', { username, password });
+      login(res.data.token, res.data.role);
+      navigate('/client/dashboard');
+    } catch {
       setError('Wrong username or password.');
     } finally {
       setLoading(false);
@@ -50,10 +43,10 @@ export default function Login() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--text)', margin: 0 }}>
-            OPER<span style={{ color: 'var(--blue)' }}>ON</span>
+            OPER<span style={{ color: 'var(--accent)' }}>ON</span>
           </h1>
           <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 6 }}>
-            Access Worker Portal
+            Client Portal
           </p>
         </div>
 
@@ -68,13 +61,9 @@ export default function Login() {
               onChange={e => setUsername(e.target.value)}
               required
               style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                fontSize: 14,
-                outline: 'none',
-                boxSizing: 'border-box',
+                width: '100%', padding: '10px 12px',
+                border: '1px solid var(--border)', borderRadius: 10,
+                fontSize: 14, boxSizing: 'border-box',
               }}
             />
           </div>
@@ -89,25 +78,18 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)}
               required
               style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                fontSize: 14,
-                outline: 'none',
-                boxSizing: 'border-box',
+                width: '100%', padding: '10px 12px',
+                border: '1px solid var(--border)', borderRadius: 10,
+                fontSize: 14, boxSizing: 'border-box',
               }}
             />
           </div>
 
           {error && (
             <div style={{
-              background: 'var(--red-bg)',
-              color: 'var(--red)',
-              borderRadius: 8,
-              padding: '8px 12px',
-              fontSize: 13,
-              marginBottom: 16,
+              background: 'var(--red-bg)', color: 'var(--red)',
+              borderRadius: 8, padding: '8px 12px',
+              fontSize: 13, marginBottom: 16,
             }}>
               {error}
             </div>
@@ -117,26 +99,21 @@ export default function Login() {
             type="submit"
             disabled={loading}
             style={{
-              width: '100%',
-              background: 'var(--accent)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              padding: '11px 0',
-              fontWeight: 700,
-              fontSize: 14,
+              width: '100%', background: 'var(--accent)', color: '#fff',
+              border: 'none', borderRadius: 10, padding: '11px 0',
+              fontWeight: 700, fontSize: 14,
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'Prijava...' : 'Prijavi se'}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--text2)' }}>
-          Client?{' '}
-          <a href="/client/login" style={{ color: 'var(--accent)', fontWeight: 700 }}>
-            Client login
+          Worker?{' '}
+          <a href="/login" style={{ color: 'var(--accent)', fontWeight: 700 }}>
+            Worker login
           </a>
         </p>
       </div>

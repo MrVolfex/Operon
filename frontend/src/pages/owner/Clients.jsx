@@ -12,24 +12,30 @@ const avatarColors = ['#F97316','#3B82F6','#8B5CF6','#22C55E','#EF4444','#F59E0B
 
 export default function Clients() {
   const [clients, setClients] = useState([]);
-  const [vehicles, setVehicles] = useState([]);
+  const [vehicles, setVehicles] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/api/clients'),
-      api.get('/api/vehicles'),
-    ]).then(([cl, vh]) => {
-      setClients(cl.data);
-      setVehicles(vh.data);
-    }).catch(() => setError('Error loading data.'))
+    api.get('/api/clients')
+      .then(res => {
+        setClients(res.data);
+        return Promise.all(res.data.map(c =>
+          api.get(`/api/clients/${c.id}/vehicles`).then(v => ({ clientId: c.id, vehicles: v.data }))
+        ));
+      })
+      .then(results => {
+        const map = {};
+        results.forEach(r => { map[r.clientId] = r.vehicles; });
+        setVehicles(map);
+      })
+      .catch(() => setError('Error loading data.'))
       .finally(() => setLoading(false));
   }, []);
 
   function vehiclesForClient(clientId) {
-    return vehicles.filter(v => v.clientId === clientId);
+    return vehicles[clientId] ?? [];
   }
 
   function toggleExpand(id) {
@@ -43,7 +49,7 @@ export default function Clients() {
           Clients
         </h2>
         <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>
-          {clients.length} clients · {vehicles.length} vehicles
+          {clients.length} clients · {Object.values(vehicles).reduce((sum, v) => sum + v.length, 0)} vehicles
         </p>
       </div>
 

@@ -3,11 +3,14 @@ package com.operon.operon.controller;
 import com.operon.operon.dto.ClientCreateRequest;
 import com.operon.operon.dto.ClientDTO;
 import com.operon.operon.dto.LoginResponse;
+import com.operon.operon.dto.VehicleDTO;
 import com.operon.operon.model.ClientType;
 import com.operon.operon.security.JwtUtil;
 import com.operon.operon.service.ClientService;
+import com.operon.operon.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClientController {
     private final ClientService clientService;
+    private final VehicleService vehicleService;
     private final JwtUtil jwtUtil;
 
     @GetMapping
@@ -53,6 +57,12 @@ public class ClientController {
     public ResponseEntity<List<ClientDTO>> getClientsByType(@PathVariable ClientType clientType) {
         return ResponseEntity.ok(clientService.getClientsByType(clientType));
     }
+
+    @GetMapping("/{id}/vehicles")
+    public ResponseEntity<List<VehicleDTO>> getVehiclesByClient(@PathVariable Long id) {
+        return ResponseEntity.ok(vehicleService.getVehiclesByClientId(id));
+    }
+
 }
 
 

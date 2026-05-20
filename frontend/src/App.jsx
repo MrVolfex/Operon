@@ -9,7 +9,9 @@ import Clients from './pages/owner/Clients';
 import Workers from './pages/owner/Workers';
 import Invoices from './pages/owner/Invoices';
 import OwnerAppointments from './pages/owner/OwnerAppointments';
-
+import ClientLogin from './pages/client/ClientLogin';
+import ClientDashboard from './pages/client/ClientDashboard';
+import ClientAppointments from './pages/client/ClientAppointments';
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
   return token ? children : <Navigate to="/login" />;
@@ -29,6 +31,9 @@ export default function App() {
           <Route path="/owner/workers" element={<ProtectedRoute><Workers/></ProtectedRoute>} />
           <Route path="/owner/invoices" element={<ProtectedRoute><Invoices/></ProtectedRoute>} />
           <Route path="/owner/appointments" element={<ProtectedRoute><OwnerAppointments/></ProtectedRoute>} />
+          <Route path="/client/login" element={<ClientLogin />} />
+          <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard/></ProtectedRoute>} />
+          <Route path="/client/appointments" element={<ProtectedRoute><ClientAppointments/></ProtectedRoute>} />
           <Route path="/" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>

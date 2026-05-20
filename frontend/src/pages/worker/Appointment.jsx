@@ -14,10 +14,28 @@ const statusStyle = {
   CANCELLED: { background: 'var(--red-bg)',    color: 'var(--red)'    },
 };
 
+const ALL_STATUSES = ['PENDING', 'CONFIRMED', 'CANCELLED'];
+
 export default function Appointment() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updating, setUpdating] = useState(null);
+
+  function handleStatusChange(a, newStatus) {
+    if (newStatus === a.status) return;
+    setUpdating(a.id);
+    api.put(`/api/appointments/${a.id}`, {
+      scheduledAt: a.scheduledAt,
+      status: newStatus,
+      note: a.note,
+      clientId: a.clientId,
+      vehicleId: a.vehicleId,
+    })
+      .then(res => setAppointments(prev => prev.map(x => x.id === a.id ? res.data : x)))
+      .catch(() => alert('Greška pri promeni statusa.'))
+      .finally(() => setUpdating(null));
+  }
 
   useEffect(() => {
     api.get('/api/appointments')
@@ -85,15 +103,26 @@ export default function Appointment() {
                     </div>
                   </td>
                   <td style={{ padding: '14px 16px' }}>
-                    <span style={{
-                      ...statusStyle[a.status],
-                      borderRadius: 20,
-                      padding: '3px 10px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                    }}>
-                      {statusLabel[a.status] ?? a.status}
-                    </span>
+                    <select
+                      value={a.status}
+                      disabled={updating === a.id}
+                      onChange={e => handleStatusChange(a, e.target.value)}
+                      style={{
+                        ...statusStyle[a.status],
+                        borderRadius: 20,
+                        padding: '3px 10px',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        border: 'none',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        opacity: updating === a.id ? 0.5 : 1,
+                      }}
+                    >
+                      {ALL_STATUSES.map(s => (
+                        <option key={s} value={s}>{statusLabel[s]}</option>
+                      ))}
+                    </select>
                   </td>
                   <td style={{ padding: '14px 16px', fontSize: 14, color: 'var(--text2)' }}>
                     {a.note ?? '—'}
