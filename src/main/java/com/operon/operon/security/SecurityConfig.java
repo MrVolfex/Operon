@@ -86,7 +86,7 @@ public class SecurityConfig {
                         "/api/me",
                         "/api/vehicles/**",
                         "/api/notifications/**",
-                        "/api/client-order-parts/**",
+                        "/api/client-orders/**",
                         "/api/my-appointments/**"
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))

@@ -3,6 +3,7 @@ package com.operon.operon.controller;
 import com.operon.operon.dto.AppointmentCreateRequest;
 import com.operon.operon.dto.AppointmentDTO;
 import com.operon.operon.dto.ClientDTO;
+import com.operon.operon.model.Appointment;
 import com.operon.operon.service.AppointmentService;
 import com.operon.operon.service.ClientService;
 import jakarta.validation.Valid;
@@ -11,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -41,4 +44,12 @@ public class ClientAppointmentController {
         appointmentService.cancelAppointment(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/booked-slots")
+    public ResponseEntity<List<String>> getBookedSlots(@RequestParam LocalDate date) {
+        return ResponseEntity.ok(appointmentService.getBookedSlots(date));
+    }
+
+
+
 }

@@ -12,6 +12,8 @@ import com.operon.operon.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,6 +108,15 @@ public class AppointmentService {
             throw new RuntimeException("Appointment not found with id: " + id);
         }
         appointmentRepository.deleteById(id);
+    }
+
+    public List<String> getBookedSlots(LocalDate date) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to   = date.atTime(23, 59, 59);
+        return appointmentRepository.findByScheduledAtBetween(from, to).stream()
+                .filter(a -> a.getStatus() != AppointmentStatus.CANCELLED)
+                .map(a -> a.getScheduledAt().toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private AppointmentDTO toDTO(Appointment appointment) {

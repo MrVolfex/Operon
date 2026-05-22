@@ -1,8 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useEffect, useState } from 'react';
+import api from '../api/axios';
 
 const navItems = [
-  { to: '/client/dashboard', label: 'My Vehicles' },
+  { to: '/client/dashboard', label: 'Dashboard' },
   { to: '/client/appointments', label: 'Appointments' },
   { to: '/client/invoices', label: 'Invoices' },
   { to: '/client/orders', label: 'Parts Orders' },
@@ -11,11 +13,18 @@ const navItems = [
 export default function ClientLayout({ children }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
-
+  const [clientUsername, setClientUsername] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   function handleLogout() {
     logout();
     navigate('/client/login');
   }
+
+  useEffect(() => {
+    api.get('/api/me').then(res => {
+      setClientUsername(res.data.username);
+    }).catch(() => setError('Failed to fetch client info.')).finally(() => setLoading(false));}, []);
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
@@ -74,7 +83,7 @@ export default function ClientLayout({ children }) {
           padding: '0 30px', position: 'sticky', top: 0, zIndex: 10,
         }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
-            Client Portal
+            Dobro dosao/la,{clientUsername}
           </span>
         </header>
 

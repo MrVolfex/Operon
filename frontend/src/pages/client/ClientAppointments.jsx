@@ -118,6 +118,7 @@ export default function ClientAppointments() {
   const [selectedService, setSelectedService] = useState('mali-servis');
   const [selectedDate, setSelectedDate]       = useState(null);
   const [selectedTime, setSelectedTime]       = useState('');
+  const [bookedSlots, setBookedSlots]         = useState([]);
   const [note, setNote]                       = useState('');
   const [submitting, setSubmitting]           = useState(false);
   const [formError, setFormError]             = useState('');
@@ -140,11 +141,27 @@ export default function ClientAppointments() {
       .finally(() => setLoading(false));
   }, []);
 
+  function handleDateSelect(date) {
+    setSelectedDate(date);
+    setSelectedTime('');
+    const p = n => String(n).padStart(2, '0');
+    const dateStr = `${date.getFullYear()}-${p(date.getMonth()+1)}-${p(date.getDate())}`;
+    api.get(`/api/my-appointments/booked-slots?date=${dateStr}`)
+      .then(res => setBookedSlots(res.data))
+      .catch(() => setBookedSlots([]));
+  }
+
   function handleCancel(id) {
+    const appt = appointments.find(a => a.id === id);
     api.patch(`/api/my-appointments/${id}/cancel`)
-      .then(() => setAppointments(prev =>
-        prev.map(a => a.id === id ? { ...a, status: 'CANCELLED' } : a)
-      ))
+      .then(() => {
+        setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'CANCELLED' } : a));
+        if (appt?.scheduledAt) {
+          const t = new Date(appt.scheduledAt);
+          const slot = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+          setBookedSlots(prev => prev.filter(s => s !== slot));
+        }
+      })
       .catch(() => alert('Greška pri otkazivanju termina.'));
   }
 
@@ -252,28 +269,34 @@ export default function ClientAppointments() {
           {/* Calendar */}
           <div style={sLabel}>Izaberi datum</div>
           <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <MiniCalendar selectedDate={selectedDate} onSelect={setSelectedDate} />
+            <MiniCalendar selectedDate={selectedDate} onSelect={handleDateSelect} />
           </div>
 
           {/* Time slots */}
           <div style={sLabel}>Slobodni termini</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 24 }}>
-            {TIME_SLOTS.map(t => (
-              <div
-                key={t}
-                onClick={() => setSelectedTime(t)}
-                style={{
-                  padding: '10px', borderRadius: 10, textAlign: 'center',
-                  border: `2px solid ${selectedTime === t ? 'var(--accent)' : 'var(--border)'}`,
-                  background: selectedTime === t ? 'var(--accent-light)' : 'var(--card)',
-                  fontSize: 13, fontWeight: 600,
-                  color: selectedTime === t ? 'var(--accent)' : 'var(--text)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                {t}
-              </div>
-            ))}
+            {TIME_SLOTS.map(t => {
+              const booked = bookedSlots.includes(t);
+              const selected = selectedTime === t;
+              return (
+                <div
+                  key={t}
+                  onClick={() => !booked && setSelectedTime(t)}
+                  style={{
+                    padding: '10px', borderRadius: 10, textAlign: 'center',
+                    border: `2px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+                    background: booked ? 'var(--bg)' : selected ? 'var(--accent-light)' : 'var(--card)',
+                    fontSize: 13, fontWeight: 600,
+                    color: booked ? 'var(--text3)' : selected ? 'var(--accent)' : 'var(--text)',
+                    cursor: booked ? 'not-allowed' : 'pointer',
+                    opacity: booked ? 0.45 : 1,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {t}
+                </div>
+              );
+            })}
           </div>
 
           {/* Note */}

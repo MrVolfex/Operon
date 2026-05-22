@@ -2,15 +2,15 @@ package com.operon.operon.dto;
 
 import com.operon.operon.model.OrderStatus;
 import lombok.Data;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-public class ClientOrderPartDTO {
+public class ClientOrderDTO {
     private Long id;
-    private Integer quantity;
-    private Double unitPrice;
+    private Long clientId;
     private LocalDateTime orderedAt;
     private OrderStatus status;
-    private Long clientId;
-    private Long partId;
+    private List<ClientOrderItemDTO> items;
 }

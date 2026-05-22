@@ -21,9 +21,7 @@ export default function ClientDashboard() {
         <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
           My Vehicles
         </h2>
-        <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>
-          {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} registered
-        </p>
+        
       </div>
 
       {loading && <p style={{ color: 'var(--text2)' }}>Loading...</p>}
