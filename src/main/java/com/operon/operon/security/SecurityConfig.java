@@ -87,8 +87,11 @@ public class SecurityConfig {
                         "/api/vehicles/**",
                         "/api/notifications/**",
                         "/api/client-orders/**",
-                        "/api/my-appointments/**"
-                )
+                        "/api/my-appointments/**",
+                        "/api/my-work-orders/**",
+                        "/api/my-invoices/**"
+
+                        )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->

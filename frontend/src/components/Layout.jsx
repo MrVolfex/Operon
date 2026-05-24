@@ -2,7 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { to: '/worker/dashboard', label: 'Work Orders' },
+  { to: '/worker/dashboard', label: 'Dashboard' },
+  { to: '/worker/work-orders', label: 'Work Orders' },
   { to: '/worker/parts', label: 'Parts' },
   { to: '/worker/appointments', label: 'Appointments' },
 ];

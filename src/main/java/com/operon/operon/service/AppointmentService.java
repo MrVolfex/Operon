@@ -129,7 +129,9 @@ public class AppointmentService {
                 appointment.getVehicle().getId(),
                 appointment.getVehicle().getBrand(),
                 appointment.getVehicle().getModel(),
-                appointment.getVehicle().getLicensePlate()
+                appointment.getVehicle().getLicensePlate(),
+                appointment.getClient().getFirstName(),
+                appointment.getClient().getLastName()
         );
     }
 }

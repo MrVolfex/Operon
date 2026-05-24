@@ -7,7 +7,8 @@ const navItems = [
   { to: '/client/dashboard', label: 'Dashboard' },
   { to: '/client/appointments', label: 'Appointments' },
   { to: '/client/invoices', label: 'Invoices' },
-  { to: '/client/orders', label: 'Parts Orders' },
+  { to: '/client/orders', label: 'Ordering Parts' },
+  { to: '/client/status', label: 'Vehicle Status' },
 ];
 
 export default function ClientLayout({ children }) {
@@ -83,7 +84,7 @@ export default function ClientLayout({ children }) {
           padding: '0 30px', position: 'sticky', top: 0, zIndex: 10,
         }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
-            Dobro dosao/la,{clientUsername}
+            Welcome, {clientUsername}
           </span>
         </header>
 

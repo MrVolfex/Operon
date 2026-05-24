@@ -2,14 +2,17 @@ package com.operon.operon.service;
 
 import com.operon.operon.dto.InvoiceCreateRequest;
 import com.operon.operon.dto.InvoiceDTO;
+import com.operon.operon.dto.OrderItemDTO;
 import com.operon.operon.model.Client;
 import com.operon.operon.model.Invoice;
+import com.operon.operon.model.OrderItem;
 import com.operon.operon.model.WorkOrder;
 import com.operon.operon.repository.ClientRepository;
 import com.operon.operon.repository.InvoiceRepository;
 import com.operon.operon.repository.WorkOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -86,15 +89,37 @@ public class InvoiceService {
         return String.format("INV-%05d", count);
     }
 
-    private InvoiceDTO toDTO(Invoice invoice) {
+    @Transactional
+    public InvoiceDTO toDTO(Invoice invoice) {
         InvoiceDTO dto = new InvoiceDTO();
         dto.setId(invoice.getId());
         dto.setNumber(invoice.getNumber());
         dto.setIssuedAt(invoice.getIssuedAt());
         dto.setAmount(invoice.getAmount());
         dto.setIsPaid(invoice.getIsPaid());
-        dto.setWorkOrderId(invoice.getWorkOrder().getId());
+        WorkOrder wo = invoice.getWorkOrder();
+        dto.setWorkOrderId(wo.getId());
+        dto.setWorkOrderDescription(wo.getDescription());
         dto.setClientId(invoice.getClient().getId());
+        dto.setClientFirstName(invoice.getClient().getFirstName());
+        dto.setClientLastName(invoice.getClient().getLastName());
+        if (wo.getVehicle() != null) {
+            dto.setVehicleBrand(wo.getVehicle().getBrand());
+            dto.setVehicleModel(wo.getVehicle().getModel());
+            dto.setVehicleLicensePlate(wo.getVehicle().getLicensePlate());
+        }
+        List<OrderItemDTO> items = wo.getOrderItems().stream().map(item -> {
+            OrderItemDTO i = new OrderItemDTO();
+            i.setId(item.getId());
+            i.setQuantity(item.getQuantity());
+            i.setPrice(item.getPrice());
+            i.setDiscount(item.getDiscount());
+            i.setPartId(item.getPart() != null ? item.getPart().getId() : null);
+            i.setServiceTypeId(item.getServiceType() != null ? item.getServiceType().getId() : null);
+            i.setName(item.getPart() != null ? item.getPart().getName() : item.getServiceType().getType());
+            return i;
+        }).collect(Collectors.toList());
+        dto.setItems(items);
         return dto;
     }
 }

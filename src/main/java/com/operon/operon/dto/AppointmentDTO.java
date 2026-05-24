@@ -20,4 +20,6 @@ public class AppointmentDTO {
     private String vehicleModel;
     private String vehicleLicensePlate;
 
+    private String clientFirstName;
+    private String clientLastName;
 }

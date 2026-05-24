@@ -2,16 +2,17 @@ package com.operon.operon.service;
 
 import com.operon.operon.dto.WorkOrderCreateRequest;
 import com.operon.operon.dto.WorkOrderDTO;
-import com.operon.operon.model.Vehicle;
-import com.operon.operon.model.WorkOrder;
-import com.operon.operon.model.WorkOrderStatus;
-import com.operon.operon.model.Worker;
+import com.operon.operon.model.*;
+import com.operon.operon.repository.AppointmentRepository;
+import com.operon.operon.repository.InvoiceRepository;
 import com.operon.operon.repository.VehicleRepository;
 import com.operon.operon.repository.WorkOrderRepository;
 import com.operon.operon.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,8 @@ public class WorkOrderService {
     private final WorkOrderRepository workOrderRepository;
     private final WorkerRepository workerRepository;
     private final VehicleRepository vehicleRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final InvoiceRepository invoiceRepository;
 
     public List<WorkOrderDTO> getAllWorkOrder(){
         return workOrderRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -56,13 +59,44 @@ public class WorkOrderService {
         return toDTO(workOrderRepository.save(workOrder));
     }
 
+    public WorkOrderDTO createFromAppointment(Long appointmentId, String workerUsername) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
+        Worker worker = workerRepository.findByUsername(workerUsername)
+                .orElseThrow(() -> new RuntimeException("Worker not found: " + workerUsername));
+
+        WorkOrder workOrder = new WorkOrder();
+        workOrder.setAppointment(appointment);
+        workOrder.setVehicle(appointment.getVehicle());
+        workOrder.setWorker(worker);
+        workOrder.setOpenedAt(LocalDateTime.now());
+        workOrder.setStatus(WorkOrderStatus.OPEN);
+        workOrder.setDescription(appointment.getNote());
+
+        return toDTO(workOrderRepository.save(workOrder));
+    }
+
+    @Transactional
     public WorkOrderDTO updateStatus(Long id, WorkOrderStatus status){
         WorkOrder workOrder= workOrderRepository.findById(id).orElseThrow(()->new RuntimeException("WorkOrder not found"));
         workOrder.setStatus(status);
         if(status==WorkOrderStatus.COMPLETED || status==WorkOrderStatus.CANCELLED){
             workOrder.setClosedAt(LocalDateTime.now());
         }
-        return toDTO(workOrderRepository.save(workOrder));
+        WorkOrder saved = workOrderRepository.save(workOrder);
+        if (status == WorkOrderStatus.COMPLETED && invoiceRepository.findByWorkOrder_Id(saved.getId()).isEmpty()) {
+            Client client = saved.getVehicle().getClient();
+            Invoice invoice = new Invoice();
+            invoice.setWorkOrder(saved);
+            invoice.setClient(client);
+            invoice.setIssuedAt(LocalDate.now());
+            invoice.setAmount(saved.getTotal());
+            invoice.setIsPaid(false);
+            long count = invoiceRepository.count() + 1;
+            invoice.setNumber(String.format("INV-%05d", count));
+            invoiceRepository.save(invoice);
+        }
+        return toDTO(saved);
     }
     public void deleteWorkOrder(Long id) {
         if (!workOrderRepository.existsById(id)) {
@@ -70,6 +104,11 @@ public class WorkOrderService {
         }
         workOrderRepository.deleteById(id);
     }
+    public List<WorkOrderDTO> getWorkOrdersByClient(Long clientId) {
+        return workOrderRepository.findByVehicle_Client_Id(clientId)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
 
 
     private WorkOrderDTO toDTO(WorkOrder workOrder) {
@@ -88,6 +127,11 @@ public class WorkOrderService {
         dto.setVehicleModel(workOrder.getVehicle().getModel());
         dto.setVehicleLicensePlate(workOrder.getVehicle().getLicensePlate());
         dto.setTotal(workOrder.getTotal());
+        if (workOrder.getAppointment() != null) {
+            dto.setAppointmentId(workOrder.getAppointment().getId());
+            dto.setClientFirstName(workOrder.getAppointment().getClient().getFirstName());
+            dto.setClientLastName(workOrder.getAppointment().getClient().getLastName());
+        }
         return dto;
     }
 }

@@ -21,4 +21,7 @@ public class WorkOrderDTO {
     private String vehicleModel;
     private String vehicleLicensePlate;
 
+    private Long appointmentId;
+    private String clientFirstName;
+    private String clientLastName;
 }

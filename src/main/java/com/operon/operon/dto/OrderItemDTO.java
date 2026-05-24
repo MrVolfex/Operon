@@ -12,4 +12,5 @@ public class OrderItemDTO {
     private Long workOrderId;
     private Long partId;
     private Long serviceTypeId;
+    private String name;
 }

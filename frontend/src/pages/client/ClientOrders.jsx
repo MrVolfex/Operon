@@ -20,6 +20,7 @@ export default function ClientOrders() {
   const [success, setSuccess]   = useState('');
   const [cartOpen, setCartOpen] = useState(false);
   const cartRef = useRef(null);
+  const [search, setSearch] = useState(''); 
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -40,7 +41,7 @@ export default function ClientOrders() {
         setCatalog(catRes.data);
         setOrders(ordRes.data);
       })
-      .catch(() => setError('Greška pri učitavanju.'))
+      .catch(() => setError('Error loading data.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -74,11 +75,11 @@ export default function ClientOrders() {
       const res = await api.post('/api/client-orders', payload);
       setOrders(prev => [res.data, ...prev]);
       setCart([]);
-      setSuccess('Narudžbina je uspešno kreirana!');
+      setSuccess('Order placed successfully!');
       setTab('orders');
       setTimeout(() => setSuccess(''), 3500);
     } catch {
-      setError('Greška pri kreiranju narudžbine.');
+      setError('Error placing order.');
     } finally {
       setPlacing(false);
     }
@@ -86,12 +87,22 @@ export default function ClientOrders() {
 
   const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
+  const filteredCatalog = catalog.filter(p => {
+    const q = search.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(q) ||
+      (p.partNumber && p.partNumber.toLowerCase().includes(q)) ||
+      (p.brand && p.brand.toLowerCase().includes(q)) ||
+      (p.model && p.model.toLowerCase().includes(q))
+    );
+  }).filter(p => p.stockQuantity > 0);
+
   return (
     <ClientLayout>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Parts Orders</h2>
-          <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>Naruči delove direktno iz servisa</p>
+          <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>Order parts directly from the workshop</p>
         </div>
 
         <div style={{ position: 'relative' }} ref={cartRef}>
@@ -104,7 +115,7 @@ export default function ClientOrders() {
             }}
           >
             <CartIcon />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Korpa</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Cart</span>
             {cart.length > 0 && (
               <span style={{
                 position: 'absolute', top: -6, right: -6,
@@ -126,11 +137,11 @@ export default function ClientOrders() {
               border: '1px solid var(--border)', zIndex: 100, overflow: 'hidden',
             }}>
               <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border)', fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>
-                Korpa
+                Cart
               </div>
               {cart.length === 0 ? (
                 <div style={{ padding: 24, textAlign: 'center', color: 'var(--text2)', fontSize: 14 }}>
-                  Korpa je prazna.
+                  Your cart is empty.
                 </div>
               ) : (
                 <>
@@ -165,7 +176,7 @@ export default function ClientOrders() {
                   </div>
                   <div style={{ padding: '14px 18px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ fontSize: 12, color: 'var(--text2)' }}>Ukupno</div>
+                      <div style={{ fontSize: 12, color: 'var(--text2)' }}>Total</div>
                       <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--accent)' }}>${cartTotal.toFixed(2)}</div>
                     </div>
                     <button
@@ -177,7 +188,7 @@ export default function ClientOrders() {
                         fontSize: 13, cursor: 'pointer',
                       }}
                     >
-                      {placing ? 'Naručujem...' : 'Naruči'}
+                      {placing ? 'Placing...' : 'Place Order'}
                     </button>
                   </div>
                 </>
@@ -199,33 +210,54 @@ export default function ClientOrders() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--card)', borderRadius: 12, padding: 4, width: 'fit-content', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        {[['catalog', 'Katalog delova'], ['orders', 'Moje narudžbine']].map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--card)', borderRadius: 12, padding: 4, width: 'fit-content', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          {[['catalog', 'Parts Catalog'], ['orders', 'My Orders']].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              style={{
+                padding: '8px 20px', borderRadius: 9, border: 'none', fontWeight: 700, fontSize: 13,
+                background: tab === key ? 'var(--accent)' : 'transparent',
+                color: tab === key ? '#fff' : 'var(--text2)',
+                cursor: 'pointer',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div>
+          {tab === 'catalog' &&  (
+          <input
+            type="text"
+            placeholder="Search by name, number, brand..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
             style={{
-              padding: '8px 20px', borderRadius: 9, border: 'none', fontWeight: 700, fontSize: 13,
-              background: tab === key ? 'var(--accent)' : 'transparent',
-              color: tab === key ? '#fff' : 'var(--text2)',
-              cursor: 'pointer',
-            }}
-          >
-            {label}
-          </button>
-        ))}
+              padding: '9px 14px', border: '1px solid var(--border)',
+              borderRadius: 10, fontSize: 13, outline: 'none',
+              width: 300, background: 'var(--card)', color: 'var(--text)',
+              marginBottom: 16, display: 'block',
+            }}/>)}
+          </div>
       </div>
 
-      {loading && <p style={{ color: 'var(--text2)' }}>Učitavanje...</p>}
+      
 
+
+      {loading && <p style={{ color: 'var(--text2)' }}>Loading...</p>}
+      
       {/* CATALOG TAB */}
       {!loading && tab === 'catalog' && (
+        
         <div>
-          {catalog.filter(p => p.stockQuantity > 0).length === 0 && (
-            <p style={{ color: 'var(--text2)' }}>Nema dostupnih delova.</p>
+          {filteredCatalog.length === 0 && (
+            <p style={{ color: 'var(--text2)' }}>{search ? 'No results found.' : 'No parts available.'}
+</p>
           )}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-            {catalog.filter(p => p.stockQuantity > 0).map(part => {
+            {filteredCatalog.map(part => {
               const inCart = cart.find(i => i.partId === part.id);
               return (
                 <div key={part.id} style={{
@@ -240,7 +272,7 @@ export default function ClientOrders() {
                   <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent)', marginTop: 4 }}>
                     ${part.price?.toFixed(2)}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>Na stanju: {part.stockQuantity} kom</div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>In stock: {part.stockQuantity} pcs</div>
 
                   {inCart ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
@@ -248,7 +280,7 @@ export default function ClientOrders() {
                       <span style={{ fontWeight: 700, fontSize: 15 }}>{inCart.quantity}</span>
                       <button onClick={() => changeQty(part.id, 1)} style={qtyBtnStyle}>+</button>
                       <button onClick={() => removeFromCart(part.id)} style={{ marginLeft: 'auto', background: 'var(--red-bg)', color: 'var(--red)', border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                        Ukloni
+                        Remove
                       </button>
                     </div>
                   ) : (
@@ -256,7 +288,7 @@ export default function ClientOrders() {
                       onClick={() => addToCart(part)}
                       style={{ marginTop: 4, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
                     >
-                      + Dodaj u korpu
+                      + Add to Cart
                     </button>
                   )}
                 </div>
@@ -270,7 +302,7 @@ export default function ClientOrders() {
       {!loading && tab === 'orders' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {orders.length === 0 && (
-            <p style={{ color: 'var(--text2)' }}>Nemate narudžbina.</p>
+            <p style={{ color: 'var(--text2)' }}>No orders yet.</p>
           )}
           {orders.map(order => {
             const sc = STATUS_COLORS[order.status] ?? STATUS_COLORS.PENDING;
@@ -280,14 +312,14 @@ export default function ClientOrders() {
                 {/* Order header */}
                 <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>Narudžbina #{order.id}</span>
+                    <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>Order #{order.id}</span>
                     <span style={{ background: sc.bg, color: sc.color, borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
                       {order.status}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <span style={{ fontSize: 13, color: 'var(--text2)' }}>
-                      {new Date(order.orderedAt).toLocaleDateString('sr-RS')}
+                      {new Date(order.orderedAt).toLocaleDateString('en-GB')}
                     </span>
                     <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--accent)' }}>
                       ${total.toFixed(2)}
@@ -298,7 +330,7 @@ export default function ClientOrders() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      {['Deo', 'Marka', 'Part No.', 'Kol.', 'Cena/kom', 'Ukupno'].map(h => (
+                      {['Part', 'Brand', 'Part No.', 'Qty', 'Unit Price', 'Total'].map(h => (
                         <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           {h}
                         </th>
@@ -325,6 +357,8 @@ export default function ClientOrders() {
           })}
         </div>
       )}
+
+      
     </ClientLayout>
   );
 }

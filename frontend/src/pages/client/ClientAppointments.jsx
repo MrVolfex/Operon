@@ -3,18 +3,18 @@ import ClientLayout from '../../components/ClientLayout';
 import api from '../../api/axios';
 
 const SERVICES = [
-  { key: 'mali-servis',   label: 'Mali servis',     price: 'od 6.000 RSD',  icon: '🔧' },
-  { key: 'veliki-servis', label: 'Veliki servis',    price: 'od 14.000 RSD', icon: '⚙️' },
-  { key: 'gume',          label: 'Gume / Točkovi',  price: 'od 1.200 RSD',  icon: '🔄' },
-  { key: 'dijagnostika',  label: 'Dijagnostika',     price: 'od 2.000 RSD',  icon: '🔍' },
-  { key: 'kocioni',       label: 'Kočioni sistem',   price: 'od 3.500 RSD',  icon: '🪛' },
-  { key: 'ostalo',        label: 'Ostalo',           price: 'po dogovoru',   icon: '📋' },
+  { key: 'mali-servis',   label: 'Minor Service',    price: 'from $60',  icon: '🔧' },
+  { key: 'veliki-servis', label: 'Major Service',    price: 'from $140', icon: '⚙️' },
+  { key: 'gume',          label: 'Tires / Wheels',   price: 'from $12',  icon: '🔄' },
+  { key: 'dijagnostika',  label: 'Diagnostics',      price: 'from $20',  icon: '🔍' },
+  { key: 'kocioni',       label: 'Brake System',     price: 'from $35',  icon: '🪛' },
+  { key: 'ostalo',        label: 'Other',            price: 'by quote',  icon: '📋' },
 ];
 
 const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
 
-const MONTHS = ['Januar','Februar','Mart','April','Maj','Jun','Jul','Avgust','Septembar','Oktobar','Novembar','Decembar'];
-const DAY_LABELS = ['Pon','Uto','Sre','Čet','Pet','Sub','Ned'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 const statusStyle = {
   PENDING:   { background: 'var(--yellow-bg)', color: 'var(--yellow)' },
@@ -137,7 +137,7 @@ export default function ClientAppointments() {
         setVehicles(vehRes.data);
         if (vehRes.data.length > 0) setSelectedVehicle(String(vehRes.data[0].id));
       })
-      .catch(() => setError('Greška pri učitavanju podataka.'))
+      .catch(() => setError('Error loading data.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -162,7 +162,7 @@ export default function ClientAppointments() {
           setBookedSlots(prev => prev.filter(s => s !== slot));
         }
       })
-      .catch(() => alert('Greška pri otkazivanju termina.'));
+      .catch(() => alert('Error cancelling appointment.'));
   }
 
   function buildScheduledAt() {
@@ -176,9 +176,9 @@ export default function ClientAppointments() {
 
   function handleSubmit() {
     setFormError('');
-    if (!selectedVehicle) { setFormError('Izaberi vozilo.'); return; }
-    if (!selectedDate)    { setFormError('Izaberi datum.'); return; }
-    if (!selectedTime)    { setFormError('Izaberi vreme.'); return; }
+    if (!selectedVehicle) { setFormError('Please select a vehicle.'); return; }
+    if (!selectedDate)    { setFormError('Please select a date.'); return; }
+    if (!selectedTime)    { setFormError('Please select a time slot.'); return; }
 
     const serviceLabel = SERVICES.find(s => s.key === selectedService)?.label ?? '';
     const fullNote = serviceLabel + (note ? ` — ${note}` : '');
@@ -198,7 +198,7 @@ export default function ClientAppointments() {
         setSelectedTime('');
         setNote('');
       })
-      .catch(() => setFormError('Greška pri zakazivanju.'))
+      .catch(() => setFormError('Error booking appointment.'))
       .finally(() => setSubmitting(false));
   }
 
@@ -208,7 +208,7 @@ export default function ClientAppointments() {
 
   function fmtDate(d) {
     if (!d) return '—';
-    return d.toLocaleDateString('sr-Latn', { weekday: 'long', day: 'numeric', month: 'long' });
+    return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
   const sLabel = { fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 10 };
@@ -219,7 +219,7 @@ export default function ClientAppointments() {
   return (
     <ClientLayout>
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Zakazivanje servisa</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Book a Service</h2>
       </div>
 
       {/* ── Booking grid ── */}
@@ -228,7 +228,7 @@ export default function ClientAppointments() {
         {/* LEFT */}
         <div>
           {/* Vehicle */}
-          <div style={sLabel}>Vozilo</div>
+          <div style={sLabel}>Vehicle</div>
           <select
             value={selectedVehicle}
             onChange={e => setSelectedVehicle(e.target.value)}
@@ -245,7 +245,7 @@ export default function ClientAppointments() {
           </select>
 
           {/* Service type */}
-          <div style={sLabel}>Vrsta servisa</div>
+          <div style={sLabel}>Service Type</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
             {SERVICES.map(s => (
               <div
@@ -267,13 +267,13 @@ export default function ClientAppointments() {
           </div>
 
           {/* Calendar */}
-          <div style={sLabel}>Izaberi datum</div>
+          <div style={sLabel}>Select Date</div>
           <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <MiniCalendar selectedDate={selectedDate} onSelect={handleDateSelect} />
           </div>
 
           {/* Time slots */}
-          <div style={sLabel}>Slobodni termini</div>
+          <div style={sLabel}>Available Time Slots</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 24 }}>
             {TIME_SLOTS.map(t => {
               const booked = bookedSlots.includes(t);
@@ -300,12 +300,12 @@ export default function ClientAppointments() {
           </div>
 
           {/* Note */}
-          <div style={sLabel}>Napomena (opciono)</div>
+          <div style={sLabel}>Note (optional)</div>
           <textarea
             value={note}
             onChange={e => setNote(e.target.value)}
             rows={4}
-            placeholder='Opišite problem ili napomenite šta je potrebno...'
+            placeholder='Describe the issue or anything we should know...'
             style={{
               width: '100%', padding: 12, boxSizing: 'border-box',
               border: '2px solid var(--border)', borderRadius: 12,
@@ -317,14 +317,14 @@ export default function ClientAppointments() {
 
         {/* RIGHT: summary */}
         <div style={{ background: 'var(--card)', borderRadius: 16, padding: 24, position: 'sticky', top: 88, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Sažetak termina</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Appointment Summary</div>
 
           {[
-            { label: 'Vozilo',  val: vehObj ? `${vehObj.brand} ${vehObj.model}` : '—' },
-            { label: 'Usluga',  val: svcObj?.label ?? '—' },
-            { label: 'Datum',   val: fmtDate(selectedDate) },
-            { label: 'Vreme',   val: selectedTime || '—' },
-            { label: 'Servis',  val: 'Operon Servis' },
+            { label: 'Vehicle', val: vehObj ? `${vehObj.brand} ${vehObj.model}` : '—' },
+            { label: 'Service', val: svcObj?.label ?? '—' },
+            { label: 'Date',    val: fmtDate(selectedDate) },
+            { label: 'Time',    val: selectedTime || '—' },
+            { label: 'Workshop', val: 'Operon Service' },
           ].map(row => (
             <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
               <span style={{ fontSize: 13, color: 'var(--text2)' }}>{row.label}</span>
@@ -333,7 +333,7 @@ export default function ClientAppointments() {
           ))}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-            <span style={{ fontSize: 13, color: 'var(--text2)' }}>Okvirna cena</span>
+            <span style={{ fontSize: 13, color: 'var(--text2)' }}>Est. Price</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{svcObj?.price ?? '—'}</span>
           </div>
 
@@ -348,10 +348,10 @@ export default function ClientAppointments() {
               opacity: canBook ? 1 : 0.45, marginTop: 16, transition: 'opacity 0.2s',
             }}
           >
-            Potvrdi termin
+            Confirm Booking
           </button>
           <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', marginTop: 8 }}>
-            Potvrda stiže na email i SMS
+            Confirmation will be sent via email and SMS
           </div>
         </div>
       </div>
@@ -363,15 +363,15 @@ export default function ClientAppointments() {
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <div style={{ background: 'var(--card)', borderRadius: 20, padding: 28, width: 480, maxWidth: '95vw' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>Potvrdi termin</div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 20 }}>Proveri detalje pre potvrde</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>Confirm Booking</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 20 }}>Review details before confirming</div>
 
             <div style={{ background: 'var(--bg)', borderRadius: 12, padding: 16, marginBottom: 20 }}>
               {[
-                { label: 'Usluga', val: svcObj?.label },
-                { label: 'Datum',  val: fmtDate(selectedDate) },
-                { label: 'Vreme',  val: selectedTime },
-                { label: 'Vozilo', val: vehObj ? `${vehObj.brand} ${vehObj.model} · ${vehObj.licensePlate}` : '—' },
+                { label: 'Service', val: svcObj?.label },
+                { label: 'Date',    val: fmtDate(selectedDate) },
+                { label: 'Time',    val: selectedTime },
+                { label: 'Vehicle', val: vehObj ? `${vehObj.brand} ${vehObj.model} · ${vehObj.licensePlate}` : '—' },
               ].map(row => (
                 <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
                   <span style={{ fontSize: 13, color: 'var(--text2)' }}>{row.label}</span>
@@ -380,7 +380,7 @@ export default function ClientAppointments() {
               ))}
               <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                <span style={{ fontSize: 13, color: 'var(--text2)' }}>Okvirna cena</span>
+                <span style={{ fontSize: 13, color: 'var(--text2)' }}>Est. Price</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{svcObj?.price}</span>
               </div>
             </div>

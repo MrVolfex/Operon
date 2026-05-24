@@ -11,6 +11,7 @@ export default function Parts() {
   const [form, setForm] = useState({ name: '', partNumber: '', price: '', stockQuantity: '', brand: '', model: '' });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError]   = useState('');
+  const [search, setSearch] = useState('');
 
     useEffect(() => {
         api.get('/api/parts')
@@ -46,6 +47,15 @@ export default function Parts() {
       .catch(() => setFormError('Greška pri čuvanju dela.'))
       .finally(() => setSubmitting(false));
   }
+  const filteredParts = parts.filter(p => {
+    const q = search.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(q) ||
+      (p.partNumber && p.partNumber.toLowerCase().includes(q)) ||
+      (p.brand && p.brand.toLowerCase().includes(q)) ||
+      (p.model && p.model.toLowerCase().includes(q))
+    );
+  }).filter(p => p.stockQuantity > 0);
 
   return (
     <Layout>
@@ -56,21 +66,35 @@ export default function Parts() {
               {parts.length} items in inventory
             </p>
           </div>
-          <button
-            onClick={() => {
-              setEditPart(null);
-              setForm({ name: '', partNumber: '', price: '', stockQuantity: '', brand: '', model: '' });
-              setFormError('');
-              setShowModal(true);
-            }}
-            style={{
-              background: 'var(--accent)', color: '#fff', border: 'none',
-              borderRadius: 10, padding: '9px 18px', fontWeight: 700,
-              fontSize: 13, cursor: 'pointer',
-            }}
-          >
-            + Add Part
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input
+              type="text"
+              placeholder="Pretraži po imenu, broju, marki..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                padding: '9px 14px', border: '1px solid var(--border)',
+                borderRadius: 10, fontSize: 13, outline: 'none',
+                width: 280, background: 'var(--card)', color: 'var(--text)',
+              }}
+            />
+            <button
+              onClick={() => {
+                setEditPart(null);
+                setForm({ name: '', partNumber: '', price: '', stockQuantity: '', brand: '', model: '' });
+                setFormError('');
+                setShowModal(true);
+              }}
+              style={{
+                background: 'var(--accent)', color: '#fff', border: 'none',
+                borderRadius: 10, padding: '9px 18px', fontWeight: 700,
+                fontSize: 13, cursor: 'pointer',
+              }}
+            >
+              + Add Part
+            </button>
+          </div>
+          
       </div>
 
 
@@ -101,16 +125,16 @@ export default function Parts() {
               </tr>
             </thead>
             <tbody>
-              {parts.length === 0 && (
+              {filteredParts.length === 0 && (
                 <tr>
                   <td colSpan={8} style={{ padding: 24, textAlign: 'center', color: 'var(--text2)' }}>
                     No parts available.
                   </td>
                 </tr>
               )}
-              {parts.map((p, i) => (
+              {filteredParts.map((p, i) => (
                 <tr key={p.id} style={{
-                  borderBottom: i < parts.length - 1 ? '1px solid var(--border)' : 'none',
+                  borderBottom: i < filteredParts.length - 1 ? '1px solid var(--border)' : 'none',
                 }}>
                   <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                     #{p.id}
