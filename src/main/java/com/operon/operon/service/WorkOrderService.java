@@ -5,6 +5,7 @@ import com.operon.operon.dto.WorkOrderDTO;
 import com.operon.operon.model.*;
 import com.operon.operon.repository.AppointmentRepository;
 import com.operon.operon.repository.InvoiceRepository;
+import com.operon.operon.repository.NotificationRepository;
 import com.operon.operon.repository.VehicleRepository;
 import com.operon.operon.repository.WorkOrderRepository;
 import com.operon.operon.repository.WorkerRepository;
@@ -25,6 +26,7 @@ public class WorkOrderService {
     private final VehicleRepository vehicleRepository;
     private final AppointmentRepository appointmentRepository;
     private final InvoiceRepository invoiceRepository;
+    private final NotificationRepository notificationRepository;
 
     public List<WorkOrderDTO> getAllWorkOrder(){
         return workOrderRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -84,8 +86,9 @@ public class WorkOrderService {
             workOrder.setClosedAt(LocalDateTime.now());
         }
         WorkOrder saved = workOrderRepository.save(workOrder);
+        Client client = saved.getVehicle().getClient();
+
         if (status == WorkOrderStatus.COMPLETED && invoiceRepository.findByWorkOrder_Id(saved.getId()).isEmpty()) {
-            Client client = saved.getVehicle().getClient();
             Invoice invoice = new Invoice();
             invoice.setWorkOrder(saved);
             invoice.setClient(client);
@@ -96,6 +99,23 @@ public class WorkOrderService {
             invoice.setNumber(String.format("INV-%05d", count));
             invoiceRepository.save(invoice);
         }
+
+        String statusLabel = switch (status) {
+            case OPEN        -> "opened";
+            case IN_PROGRESS -> "in progress";
+            case COMPLETED   -> "completed";
+            case CANCELLED   -> "cancelled";
+            default          -> status.name().toLowerCase();
+        };
+        Notification notification = new Notification();
+        notification.setClient(client);
+        notification.setContent("Work order #" + saved.getId() + " for your " +
+                saved.getVehicle().getBrand() + " " + saved.getVehicle().getModel() +
+                " is now " + statusLabel + ".");
+        notification.setSentAt(LocalDateTime.now());
+        notification.setIsDelivered(false);
+        notificationRepository.save(notification);
+
         return toDTO(saved);
     }
     public void deleteWorkOrder(Long id) {

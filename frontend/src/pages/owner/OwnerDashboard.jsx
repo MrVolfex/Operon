@@ -28,30 +28,10 @@ export default function OwnerDashboard() {
   const totalRevenue = paidInvoices.reduce((sum, i) => sum + (i.amount ?? 0), 0);
 
   const kpis = [
-    {
-      label: 'Total Revenue',
-      value: `$${totalRevenue.toFixed(2)}`,
-      color: 'var(--accent)',
-      bg: 'var(--accent-light)',
-    },
-    {
-      label: 'Work Orders',
-      value: workOrders.length,
-      color: 'var(--blue)',
-      bg: 'var(--blue-bg)',
-    },
-    {
-      label: 'Active Clients',
-      value: clients.length,
-      color: 'var(--purple)',
-      bg: 'var(--purple-bg)',
-    },
-    {
-      label: 'Unpaid Invoices',
-      value: unpaidInvoices.length,
-      color: 'var(--red)',
-      bg: 'var(--red-bg)',
-    },
+    { label: 'Total Revenue',   value: `$${totalRevenue.toFixed(2)}`, color: 'var(--accent)',  badge: `${paidInvoices.length} paid` },
+    { label: 'Work Orders',     value: workOrders.length,              color: 'var(--blue)',    badge: `${workOrders.filter(w => w.status === 'IN_PROGRESS').length} in progress` },
+    { label: 'Active Clients',  value: clients.length,                 color: 'var(--purple)',  badge: 'total' },
+    { label: 'Unpaid Invoices', value: unpaidInvoices.length,          color: 'var(--red)',     badge: `$${unpaidInvoices.reduce((s,i) => s+(i.amount??0),0).toFixed(2)} pending` },
   ];
 
   if (loading) return (
@@ -69,18 +49,19 @@ export default function OwnerDashboard() {
             background: 'var(--card)',
             borderRadius: 16,
             boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-            padding: 20,
+            padding: '20px 24px',
+            borderLeft: `4px solid ${k.color}`,
           }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: k.bg,
-              marginBottom: 12,
-            }} />
-            <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: -1.5, color: 'var(--text)' }}>
-              {k.value}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {k.label}
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: k.color }}>
+                {k.badge}
+              </span>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4 }}>
-              {k.label}
+            <div style={{ fontSize: 32, fontWeight: 900, color: k.color, lineHeight: 1 }}>
+              {k.value}
             </div>
           </div>
         ))}
@@ -111,7 +92,7 @@ export default function OwnerDashboard() {
                       #{inv.id}
                     </td>
                     <td style={{ padding: '12px 14px', fontSize: 13 }}>
-                      Client {inv.idClient}
+                      {inv.clientFirstName} {inv.clientLastName}
                     </td>
                     <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 800 }}>
                       ${inv.amount?.toFixed(2)}

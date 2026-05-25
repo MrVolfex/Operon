@@ -49,9 +49,10 @@ export default function ClientOrders() {
     setCart(prev => {
       const existing = prev.find(i => i.partId === part.id);
       if (existing) {
+        if (existing.quantity >= part.stockQuantity) return prev;
         return prev.map(i => i.partId === part.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, { partId: part.id, partName: part.name, partBrand: part.brand, price: part.price, quantity: 1 }];
+      return [...prev, { partId: part.id, partName: part.name, partBrand: part.brand, price: part.price, quantity: 1, stockQuantity: part.stockQuantity }];
     });
   }
 
@@ -61,7 +62,12 @@ export default function ClientOrders() {
 
   function changeQty(partId, delta) {
     setCart(prev => prev
-      .map(i => i.partId === partId ? { ...i, quantity: i.quantity + delta } : i)
+      .map(i => {
+        if (i.partId !== partId) return i;
+        const next = i.quantity + delta;
+        if (next > i.stockQuantity) return i;
+        return { ...i, quantity: next };
+      })
       .filter(i => i.quantity > 0)
     );
   }
@@ -95,7 +101,7 @@ export default function ClientOrders() {
       (p.brand && p.brand.toLowerCase().includes(q)) ||
       (p.model && p.model.toLowerCase().includes(q))
     );
-  }).filter(p => p.stockQuantity > 0);
+  });
 
   return (
     <ClientLayout>
@@ -165,7 +171,7 @@ export default function ClientOrders() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <button onClick={() => changeQty(item.partId, -1)} style={qtyBtnStyle}>−</button>
                           <span style={{ fontWeight: 700, fontSize: 14, minWidth: 16, textAlign: 'center' }}>{item.quantity}</span>
-                          <button onClick={() => changeQty(item.partId, 1)} style={qtyBtnStyle}>+</button>
+                          <button onClick={() => changeQty(item.partId, 1)} style={{ ...qtyBtnStyle, opacity: item.quantity >= item.stockQuantity ? 0.35 : 1, cursor: item.quantity >= item.stockQuantity ? 'not-allowed' : 'pointer' }}>+</button>
                         </div>
                         <button
                           onClick={() => removeFromCart(item.partId)}
@@ -264,6 +270,8 @@ export default function ClientOrders() {
                   background: 'var(--card)', borderRadius: 16,
                   boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                   padding: 20, display: 'flex', flexDirection: 'column', gap: 8,
+                  opacity: part.stockQuantity === 0 ? 0.55 : 1,
+                  border: part.stockQuantity === 0 ? '1.5px solid var(--red-bg)' : 'none',
                 }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{part.name}</div>
                   <div style={{ fontSize: 12, color: 'var(--text3)', fontWeight: 600 }}>
@@ -272,23 +280,26 @@ export default function ClientOrders() {
                   <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent)', marginTop: 4 }}>
                     ${part.price?.toFixed(2)}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>In stock: {part.stockQuantity} pcs</div>
+                  <div style={{ fontSize: 12, color: part.stockQuantity === 0 ? 'var(--red)' : 'var(--text3)', fontWeight: part.stockQuantity === 0 ? 700 : 400 }}>
+                    {part.stockQuantity === 0 ? 'Out of stock' : `In stock: ${part.stockQuantity} pcs`}
+                  </div>
 
                   {inCart ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
                       <button onClick={() => changeQty(part.id, -1)} style={qtyBtnStyle}>−</button>
                       <span style={{ fontWeight: 700, fontSize: 15 }}>{inCart.quantity}</span>
-                      <button onClick={() => changeQty(part.id, 1)} style={qtyBtnStyle}>+</button>
+                      <button onClick={() => changeQty(part.id, 1)} style={{ ...qtyBtnStyle, opacity: inCart.quantity >= part.stockQuantity ? 0.35 : 1, cursor: inCart.quantity >= part.stockQuantity ? 'not-allowed' : 'pointer' }}>+</button>
                       <button onClick={() => removeFromCart(part.id)} style={{ marginLeft: 'auto', background: 'var(--red-bg)', color: 'var(--red)', border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                         Remove
                       </button>
                     </div>
                   ) : (
                     <button
-                      onClick={() => addToCart(part)}
-                      style={{ marginTop: 4, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+                      onClick={() => part.stockQuantity > 0 && addToCart(part)}
+                      disabled={part.stockQuantity === 0}
+                      style={{ marginTop: 4, background: part.stockQuantity === 0 ? 'var(--border)' : 'var(--accent)', color: part.stockQuantity === 0 ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 10, padding: '9px 0', fontWeight: 700, fontSize: 13, cursor: part.stockQuantity === 0 ? 'not-allowed' : 'pointer' }}
                     >
-                      + Add to Cart
+                      {part.stockQuantity === 0 ? 'Out of Stock' : '+ Add to Cart'}
                     </button>
                   )}
                 </div>

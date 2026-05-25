@@ -6,6 +6,7 @@ import com.operon.operon.dto.ClientOrderItemDTO;
 import com.operon.operon.model.*;
 import com.operon.operon.repository.ClientOrderRepository;
 import com.operon.operon.repository.ClientRepository;
+import com.operon.operon.repository.NotificationRepository;
 import com.operon.operon.repository.PartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class ClientOrderService {
     private final ClientOrderRepository clientOrderRepository;
     private final ClientRepository clientRepository;
     private final PartRepository partRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public ClientOrderDTO createOrder(String username, List<CartItemRequest> cartItems) {
@@ -37,6 +39,15 @@ public class ClientOrderService {
             Part part = partRepository.findById(cartItem.getPartId())
                     .orElseThrow(() -> new RuntimeException("Part not found: " + cartItem.getPartId()));
 
+            if (part.getStockQuantity() < cartItem.getQuantity()) {
+                throw new IllegalStateException(
+                    "Insufficient stock for part: " + part.getName() +
+                    " (available: " + part.getStockQuantity() + ")");
+            }
+
+            part.setStockQuantity(part.getStockQuantity() - cartItem.getQuantity());
+            partRepository.save(part);
+
             ClientOrderItem item = new ClientOrderItem();
             item.setClientOrder(order);
             item.setPart(part);
@@ -45,7 +56,16 @@ public class ClientOrderService {
             order.getItems().add(item);
         }
 
-        return toDTO(clientOrderRepository.save(order));
+        ClientOrder saved = clientOrderRepository.save(order);
+
+        Notification notification = new Notification();
+        notification.setClient(client);
+        notification.setContent("Your parts order #" + saved.getId() + " has been placed successfully and is being prepared.");
+        notification.setSentAt(LocalDateTime.now());
+        notification.setIsDelivered(false);
+        notificationRepository.save(notification);
+
+        return toDTO(saved);
     }
 
     public List<ClientOrderDTO> getOrdersByClient(String username) {

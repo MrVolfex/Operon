@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 
@@ -135,9 +135,9 @@ export default function Login() {
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--text2)' }}>
           Client?{' '}
-          <a href="/client/login" style={{ color: 'var(--accent)', fontWeight: 700 }}>
+          <Link to="/client/login" style={{ color: 'var(--accent)', fontWeight: 700 }}>
             Client login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

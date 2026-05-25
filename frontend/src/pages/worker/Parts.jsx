@@ -55,7 +55,7 @@ export default function Parts() {
       (p.brand && p.brand.toLowerCase().includes(q)) ||
       (p.model && p.model.toLowerCase().includes(q))
     );
-  }).filter(p => p.stockQuantity > 0);
+  });
 
   return (
     <Layout>
@@ -135,6 +135,7 @@ export default function Parts() {
               {filteredParts.map((p, i) => (
                 <tr key={p.id} style={{
                   borderBottom: i < filteredParts.length - 1 ? '1px solid var(--border)' : 'none',
+                  background: p.stockQuantity === 0 ? 'var(--red-bg)' : 'transparent',
                 }}>
                   <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                     #{p.id}

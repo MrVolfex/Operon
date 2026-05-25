@@ -2,12 +2,10 @@ package com.operon.operon.service;
 
 import com.operon.operon.dto.AppointmentCreateRequest;
 import com.operon.operon.dto.AppointmentDTO;
-import com.operon.operon.model.Appointment;
-import com.operon.operon.model.AppointmentStatus;
-import com.operon.operon.model.Client;
-import com.operon.operon.model.Vehicle;
+import com.operon.operon.model.*;
 import com.operon.operon.repository.AppointmentRepository;
 import com.operon.operon.repository.ClientRepository;
+import com.operon.operon.repository.NotificationRepository;
 import com.operon.operon.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +21,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final ClientRepository clientRepository;
     private final VehicleRepository vehicleRepository;
+    private final NotificationRepository notificationRepository;
 
     public List<AppointmentDTO> getAllAppointments(){
         return appointmentRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -90,6 +89,16 @@ public class AppointmentService {
         appointment.setVehicle(vehicle);
 
         appointmentRepository.save(appointment);
+
+        if(request.getStatus()==AppointmentStatus.CONFIRMED){
+            Notification notification= new Notification();
+            notification.setClient(appointment.getClient());
+            notification.setContent("Your appointment on " + appointment.getScheduledAt().toLocalDate() + " at "
+                    + appointment.getScheduledAt().toLocalTime().withSecond(0).withNano(0) + " has been confirmed.");
+            notification.setSentAt(LocalDateTime.now());
+            notification.setIsDelivered(false);
+            notificationRepository.save(notification);
+        }
         return toDTO(appointment);
     }
 
