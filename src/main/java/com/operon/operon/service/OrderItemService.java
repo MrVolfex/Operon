@@ -90,6 +90,7 @@ public class OrderItemService {
         //provere da jedno mora biti null
         dto.setPartId(item.getPart() != null ? item.getPart().getId() : null);
         dto.setServiceTypeId(item.getServiceType() != null ? item.getServiceType().getId() : null);
+        dto.setName(item.getPart() != null ? item.getPart().getName() : item.getServiceType().getType());
         return dto;
     }
 

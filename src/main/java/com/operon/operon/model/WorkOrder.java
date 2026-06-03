@@ -28,6 +28,10 @@ public class WorkOrder {
 
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_appointment")
+    private Appointment appointment;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_worker", nullable = false)
     private Worker worker;

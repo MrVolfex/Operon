@@ -1,0 +1,53 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/worker/Login';
+import Dashboard from './pages/worker/Dashboard';
+import Parts from './pages/worker/Parts';
+import Appointment from './pages/worker/Appointment';
+import OwnerDashboard from './pages/owner/OwnerDashboard';
+import Clients from './pages/owner/Clients';
+import Workers from './pages/owner/Workers';
+import Invoices from './pages/owner/Invoices';
+import OwnerAppointments from './pages/owner/OwnerAppointments';
+import ClientLogin from './pages/client/ClientLogin';
+import ClientDashboard from './pages/client/ClientDashboard';
+import ClientAppointments from './pages/client/ClientAppointments';
+import ClientOrders from './pages/client/ClientOrders';
+import ClientWorkOrderStatus from './pages/client/ClientWorkOrderStatus';
+import ClientInvoices from './pages/client/ClientInvoices';
+import WorkOrders from './pages/worker/WorkOrders';
+import WorkOrderDetail from './pages/worker/WorkOrderDetails';
+function ProtectedRoute({ children }) {
+  const { token } = useAuth();
+  return token ? children : <Navigate to="/login" />;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/worker/dashboard" element={<ProtectedRoute><Dashboard/></ProtectedRoute>} />
+          <Route path="/worker/parts" element={<ProtectedRoute><Parts/></ProtectedRoute>} />
+          <Route path="/worker/appointments" element={<ProtectedRoute><Appointment/></ProtectedRoute>} />
+          <Route path="/owner/dashboard" element={<ProtectedRoute><OwnerDashboard/></ProtectedRoute>} />
+          <Route path="/owner/clients" element={<ProtectedRoute><Clients/></ProtectedRoute>} />
+          <Route path="/owner/workers" element={<ProtectedRoute><Workers/></ProtectedRoute>} />
+          <Route path="/owner/invoices" element={<ProtectedRoute><Invoices/></ProtectedRoute>} />
+          <Route path="/owner/appointments" element={<ProtectedRoute><OwnerAppointments/></ProtectedRoute>} />
+          <Route path="/client/login" element={<ClientLogin />} />
+          <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard/></ProtectedRoute>} />
+          <Route path="/client/appointments" element={<ProtectedRoute><ClientAppointments/></ProtectedRoute>} />
+          <Route path="/client/orders" element={<ProtectedRoute><ClientOrders/></ProtectedRoute>} />
+          <Route path="/client/status" element={<ProtectedRoute><ClientWorkOrderStatus/></ProtectedRoute>} />
+          <Route path="/client/invoices" element={<ProtectedRoute><ClientInvoices/></ProtectedRoute>} />
+          <Route path="/worker/work-orders" element={<ProtectedRoute><WorkOrders/></ProtectedRoute>} />
+          <Route path="/worker/work-orders/:id" element={<ProtectedRoute><WorkOrderDetail/></ProtectedRoute>} />
+
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

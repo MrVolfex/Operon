@@ -5,10 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class ClientOrderPartCreateRequest {
-
-    @NotNull
-    private Long clientId;
+public class CartItemRequest {
 
     @NotNull
     private Long partId;

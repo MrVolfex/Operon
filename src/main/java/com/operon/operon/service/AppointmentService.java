@@ -2,16 +2,16 @@ package com.operon.operon.service;
 
 import com.operon.operon.dto.AppointmentCreateRequest;
 import com.operon.operon.dto.AppointmentDTO;
-import com.operon.operon.model.Appointment;
-import com.operon.operon.model.AppointmentStatus;
-import com.operon.operon.model.Client;
-import com.operon.operon.model.Vehicle;
+import com.operon.operon.model.*;
 import com.operon.operon.repository.AppointmentRepository;
 import com.operon.operon.repository.ClientRepository;
+import com.operon.operon.repository.NotificationRepository;
 import com.operon.operon.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +21,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final ClientRepository clientRepository;
     private final VehicleRepository vehicleRepository;
+    private final NotificationRepository notificationRepository;
 
     public List<AppointmentDTO> getAllAppointments(){
         return appointmentRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -88,12 +89,25 @@ public class AppointmentService {
         appointment.setVehicle(vehicle);
 
         appointmentRepository.save(appointment);
+
+        if(request.getStatus()==AppointmentStatus.CONFIRMED){
+            Notification notification= new Notification();
+            notification.setClient(appointment.getClient());
+            notification.setContent("Your appointment on " + appointment.getScheduledAt().toLocalDate() + " at "
+                    + appointment.getScheduledAt().toLocalTime().withSecond(0).withNano(0) + " has been confirmed.");
+            notification.setSentAt(LocalDateTime.now());
+            notification.setIsDelivered(false);
+            notificationRepository.save(notification);
+        }
         return toDTO(appointment);
     }
 
     public void cancelAppointment(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new RuntimeException("Only PENDING appointments can be cancelled.");
+        }
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
     }
@@ -105,6 +119,15 @@ public class AppointmentService {
         appointmentRepository.deleteById(id);
     }
 
+    public List<String> getBookedSlots(LocalDate date) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to   = date.atTime(23, 59, 59);
+        return appointmentRepository.findByScheduledAtBetween(from, to).stream()
+                .filter(a -> a.getStatus() != AppointmentStatus.CANCELLED)
+                .map(a -> a.getScheduledAt().toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     private AppointmentDTO toDTO(Appointment appointment) {
         return new AppointmentDTO(
                 appointment.getId(),
@@ -112,7 +135,12 @@ public class AppointmentService {
                 appointment.getStatus(),
                 appointment.getNote(),
                 appointment.getClient().getId(),
-                appointment.getVehicle().getId()
+                appointment.getVehicle().getId(),
+                appointment.getVehicle().getBrand(),
+                appointment.getVehicle().getModel(),
+                appointment.getVehicle().getLicensePlate(),
+                appointment.getClient().getFirstName(),
+                appointment.getClient().getLastName()
         );
     }
 }

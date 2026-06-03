@@ -15,4 +15,13 @@ public class WorkOrderDTO {
     private Long workerId;
     private Long vehicleId;
     private Double total;
+
+
+    private String vehicleBrand;
+    private String vehicleModel;
+    private String vehicleLicensePlate;
+
+    private Long appointmentId;
+    private String clientFirstName;
+    private String clientLastName;
 }

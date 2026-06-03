@@ -7,6 +7,7 @@ import com.operon.operon.service.WorkOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,9 +49,21 @@ public class WorkOrderController {
         return ResponseEntity.status(201).body(workOrderService.createWorkOrder(request));
     }
 
+    @PostMapping("/from-appointment/{appointmentId}")
+    public ResponseEntity<WorkOrderDTO> createFromAppointment(
+            @PathVariable Long appointmentId,
+            Authentication authentication) {
+        return ResponseEntity.status(201).body(workOrderService.createFromAppointment(appointmentId, authentication.getName()));
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<WorkOrderDTO> updateStatus(@PathVariable Long id, @RequestParam WorkOrderStatus status) {
         return ResponseEntity.ok(workOrderService.updateStatus(id, status));
+    }
+
+    @PatchMapping("/{id}/description")
+    public ResponseEntity<WorkOrderDTO> updateDescription(@PathVariable Long id, @RequestBody String description) {
+        return ResponseEntity.ok(workOrderService.updateDescription(id, description));
     }
 
     @DeleteMapping("/{id}")
