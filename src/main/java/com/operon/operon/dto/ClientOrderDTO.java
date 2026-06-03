@@ -13,4 +13,6 @@ public class ClientOrderDTO {
     private LocalDateTime orderedAt;
     private OrderStatus status;
     private List<ClientOrderItemDTO> items;
+    private Double total;
+    private Boolean isPaid;
 }

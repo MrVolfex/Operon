@@ -1,6 +1,69 @@
 import { useEffect, useState, useRef } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import ClientLayout from '../../components/ClientLayout';
 import api from '../../api/axios';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+function PaymentForm({ order, clientSecret, onSuccess, onClose }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [paying, setPaying] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setPaying(true);
+    setError('');
+
+    const { error: submitError } = await elements.submit();
+    if (submitError) { setError(submitError.message); setPaying(false); return; }
+
+    const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      clientSecret,
+      confirmParams: {},
+      redirect: 'if_required',
+    });
+
+    if (stripeError) {
+      setError(stripeError.message);
+      setPaying(false);
+    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+      await api.post('/api/stripe/confirm-order', {
+        paymentIntentId: paymentIntent.id,
+        orderId: String(order.id),
+      });
+      onSuccess();
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
+        Paying <strong>Order #{order.id}</strong> — <strong style={{ color: 'var(--accent)' }}>${order.total?.toFixed(2)}</strong>
+      </div>
+      <PaymentElement />
+      {error && (
+        <div style={{ background: 'var(--red-bg)', color: 'var(--red)', borderRadius: 10, padding: '10px 14px', fontSize: 13, marginTop: 16 }}>
+          {error}
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+        <button type="submit" disabled={paying || !stripe}
+          style={{ flex: 1, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: paying ? 0.7 : 1 }}>
+          {paying ? 'Processing...' : 'Pay Now'}
+        </button>
+        <button type="button" onClick={onClose}
+          style={{ flex: 1, background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, padding: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
 
 const STATUS_COLORS = {
   PENDING:   { bg: 'var(--yellow-bg)', color: 'var(--yellow)' },
@@ -19,6 +82,9 @@ export default function ClientOrders() {
   const [placing, setPlacing]   = useState(false);
   const [success, setSuccess]   = useState('');
   const [cartOpen, setCartOpen] = useState(false);
+  const [payingOrder, setPayingOrder]     = useState(null);
+  const [clientSecret, setClientSecret]   = useState('');
+  const [loadingPayment, setLoadingPayment] = useState(false);
   const cartRef = useRef(null);
   const [search, setSearch] = useState(''); 
 
@@ -89,6 +155,24 @@ export default function ClientOrders() {
     } finally {
       setPlacing(false);
     }
+  }
+
+  function openPayment(order) {
+    setLoadingPayment(true);
+    api.post(`/api/stripe/pay-order/${order.id}`)
+      .then(res => { setClientSecret(res.data.clientSecret); setPayingOrder(order); })
+      .catch(() => setError('Failed to initialize payment.'))
+      .finally(() => setLoadingPayment(false));
+  }
+
+  function closePayment() { setPayingOrder(null); setClientSecret(''); }
+
+  function handlePaymentSuccess() {
+    setOrders(prev => prev.map(o => o.id === payingOrder.id ? { ...o, isPaid: true } : o));
+    setPayingOrder(null);
+    setClientSecret('');
+    setSuccess('Payment successful!');
+    setTimeout(() => setSuccess(''), 3500);
   }
 
   const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -328,13 +412,26 @@ export default function ClientOrders() {
                       {order.status}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span style={{ fontSize: 13, color: 'var(--text2)' }}>
                       {new Date(order.orderedAt).toLocaleDateString('en-GB')}
                     </span>
                     <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--accent)' }}>
                       ${total.toFixed(2)}
                     </span>
+                    {order.isPaid ? (
+                      <span style={{ background: 'var(--green-bg)', color: 'var(--green)', borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
+                        Paid
+                      </span>
+                    ) : order.status !== 'CANCELLED' && (
+                      <button
+                        onClick={() => openPayment(order)}
+                        disabled={loadingPayment}
+                        style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: loadingPayment ? 0.7 : 1 }}
+                      >
+                        Pay
+                      </button>
+                    )}
                   </div>
                 </div>
                 {/* Order items */}
@@ -369,7 +466,24 @@ export default function ClientOrders() {
         </div>
       )}
 
-      
+      {payingOrder && clientSecret && (
+        <div
+          onClick={e => { if (e.target === e.currentTarget) closePayment(); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <div style={{ background: 'var(--card)', borderRadius: 20, padding: 28, width: 460, maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 20 }}>Complete Payment</div>
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <PaymentForm
+                order={payingOrder}
+                clientSecret={clientSecret}
+                onSuccess={handlePaymentSuccess}
+                onClose={closePayment}
+              />
+            </Elements>
+          </div>
+        </div>
+      )}
     </ClientLayout>
   );
 }

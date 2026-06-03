@@ -22,6 +22,10 @@ export default function WorkOrderDetails() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pendingStatus, setPendingStatus] = useState(null);
+  const [description, setDescription] = useState('');
+  const [savingDesc, setSavingDesc] = useState(false);
+  const [descSaved, setDescSaved] = useState(false);
+  const [descError, setDescError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -32,6 +36,7 @@ export default function WorkOrderDetails() {
     ])
       .then(([woRes, itemsRes, partsRes, servicesRes]) => {
         setWorkOrder(woRes.data);
+        setDescription(woRes.data.description ?? '');
         setOrderItems(itemsRes.data);
         setParts(partsRes.data);
         setServices(servicesRes.data);
@@ -98,6 +103,47 @@ export default function WorkOrderDetails() {
           <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 12 }}>
             Opened: {new Date(workOrder.openedAt).toLocaleString('en-GB')}
           </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      <div style={{ background: 'var(--card)', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 32 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>Work Description</div>
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="Describe the work performed..."
+          rows={4}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            padding: '10px 12px', border: '1px solid var(--border)',
+            borderRadius: 10, fontSize: 14, resize: 'vertical',
+            outline: 'none', background: 'var(--bg)', color: 'var(--text)',
+            fontFamily: 'inherit',
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+          {descError && <div style={{ fontSize: 12, color: 'var(--red)', marginBottom: 8 }}>{descError}</div>}
+          <button
+            disabled={savingDesc}
+            onClick={() => {
+              setSavingDesc(true);
+              setDescError('');
+              setDescSaved(false);
+              api.patch(`/api/work-orders/${id}/description`, description, {
+                headers: { 'Content-Type': 'text/plain' },
+              }).then(res => { setWorkOrder(res.data); setDescSaved(true); setTimeout(() => setDescSaved(false), 2000); })
+                .catch(() => setDescError('Failed to save description.'))
+                .finally(() => setSavingDesc(false));
+            }}
+            style={{
+              background: descSaved ? 'var(--green)' : 'var(--accent)', color: '#fff', border: 'none',
+              borderRadius: 10, padding: '9px 20px', fontWeight: 700,
+              fontSize: 13, cursor: 'pointer', opacity: savingDesc ? 0.7 : 1,
+            }}
+          >
+            {savingDesc ? 'Saving...' : descSaved ? 'Saved ✓' : 'Save'}
+          </button>
         </div>
       </div>
 

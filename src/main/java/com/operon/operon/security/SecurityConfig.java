@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -89,7 +88,13 @@ public class SecurityConfig {
                         "/api/client-orders/**",
                         "/api/my-appointments/**",
                         "/api/my-work-orders/**",
-                        "/api/my-invoices/**"
+                        "/api/my-invoices/**",
+                        "/api/stripe/pay/**",
+                        "/api/stripe/pay-order/**",
+                        "/api/stripe/confirm",
+                        "/api/stripe/confirm-order",
+                        "/api/stripe/webhook"
+
 
                         )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -98,6 +103,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/client/login").permitAll()
+                        .requestMatchers("/api/stripe/webhook").permitAll()
                         .anyRequest().authenticated()
                 ).addFilterBefore(clientJwtFilter, UsernamePasswordAuthenticationFilter.class);
 

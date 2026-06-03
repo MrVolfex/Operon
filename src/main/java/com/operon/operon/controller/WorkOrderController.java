@@ -61,6 +61,11 @@ public class WorkOrderController {
         return ResponseEntity.ok(workOrderService.updateStatus(id, status));
     }
 
+    @PatchMapping("/{id}/description")
+    public ResponseEntity<WorkOrderDTO> updateDescription(@PathVariable Long id, @RequestBody String description) {
+        return ResponseEntity.ok(workOrderService.updateDescription(id, description));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkOrder(@PathVariable Long id) {
         workOrderService.deleteWorkOrder(id);

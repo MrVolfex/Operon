@@ -29,6 +29,15 @@ public class ClientOrder {
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
+    @Column
+    private Boolean isPaid = false;
+
     @OneToMany(mappedBy = "clientOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ClientOrderItem> items = new ArrayList<>();
+
+    public Double getTotal() {
+        return items.stream()
+                .mapToDouble(i -> i.getUnitPrice() * i.getQuantity())
+                .sum();
+    }
 }

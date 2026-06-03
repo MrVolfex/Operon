@@ -118,6 +118,13 @@ public class WorkOrderService {
 
         return toDTO(saved);
     }
+    public WorkOrderDTO updateDescription(Long id, String description) {
+        WorkOrder workOrder = workOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("WorkOrder not found"));
+        workOrder.setDescription(description);
+        return toDTO(workOrderRepository.save(workOrder));
+    }
+
     public void deleteWorkOrder(Long id) {
         if (!workOrderRepository.existsById(id)) {
             throw new RuntimeException("WorkOrder not found with id: " + id);

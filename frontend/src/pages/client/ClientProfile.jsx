@@ -52,6 +52,7 @@ export default function ClientProfile() {
               <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
                 @{profile.username}
               </div>
+              
             </div>
             <button
               onClick={handleLogout}

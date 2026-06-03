@@ -82,6 +82,8 @@ public class ClientOrderService {
         dto.setOrderedAt(order.getOrderedAt());
         dto.setStatus(order.getStatus());
         dto.setItems(order.getItems().stream().map(this::toItemDTO).collect(Collectors.toList()));
+        dto.setTotal(order.getTotal());
+        dto.setIsPaid(order.getIsPaid());
         return dto;
     }
 
