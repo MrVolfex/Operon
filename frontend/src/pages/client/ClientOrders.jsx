@@ -191,7 +191,7 @@ export default function ClientOrders() {
     <ClientLayout>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Parts Orders</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Ordering Parts</h2>
           <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>Order parts directly from the workshop</p>
         </div>
 

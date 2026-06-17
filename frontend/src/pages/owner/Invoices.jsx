@@ -35,7 +35,7 @@ export default function Invoices() {
     <OwnerLayout>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Invoices</h2>
-        <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>Billing overview — invoices are issued automatically when a work order is completed</p>
+        <p style={{ color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>Invoices are issued automatically when a work order is completed</p>
       </div>
 
       {/* KPI */}

@@ -2,6 +2,139 @@ import { useEffect, useState } from 'react';
 import OwnerLayout from '../../components/OwnerLayout';
 import api from '../../api/axios';
 
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildMonthlyRevenue(paidInvoices) {
+  const year = new Date().getFullYear();
+  const map = {};
+  paidInvoices.forEach(inv => {
+    if (!inv.issuedAt) return;
+    const d = new Date(inv.issuedAt);
+    if (d.getFullYear() !== year) return;
+    const month = d.getMonth();
+    map[month] = (map[month] ?? 0) + (inv.amount ?? 0);
+  });
+  return MONTH_NAMES.map((name, i) => ({
+    name,
+    revenue: parseFloat((map[i] ?? 0).toFixed(2)),
+  }));
+}
+
+function buildTopClients(paidInvoices) {
+  const map = {};
+  paidInvoices.forEach(inv => {
+    const name = `${inv.clientFirstName ?? ''} ${inv.clientLastName ?? ''}`.trim() || `Client #${inv.clientId}`;
+    map[name] = (map[name] ?? 0) + (inv.amount ?? 0);
+  });
+  return Object.entries(map)
+    .map(([name, total]) => ({ name, total: parseFloat(total.toFixed(2)) }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+}
+
+function buildWorkOrdersByStatus(workOrders) {
+  const statuses = ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+  const colors   = ['var(--blue)', 'var(--yellow)', 'var(--green)', 'var(--red)'];
+  const labels   = ['Open', 'In Progress', 'Completed', 'Cancelled'];
+  return statuses.map((s, i) => ({
+    status: s,
+    label: labels[i],
+    color: colors[i],
+    count: workOrders.filter(w => w.status === s).length,
+  }));
+}
+
+function TopClientsChart({ data }) {
+  if (data.length === 0) return <div style={{ color: 'var(--text3)', fontSize: 13, padding: '16px 0' }}>No data yet.</div>;
+  const max = data[0].total;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {data.map((d, i) => (
+        <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 22, fontSize: 12, fontWeight: 800, color: 'var(--text3)', textAlign: 'right', flexShrink: 0 }}>
+            #{i + 1}
+          </div>
+          <div style={{ width: 120, fontSize: 13, fontWeight: 600, color: 'var(--text)', flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {d.name}
+          </div>
+          <div style={{ flex: 1, background: 'var(--bg)', borderRadius: 6, height: 10, overflow: 'hidden' }}>
+            <div style={{ width: `${(d.total / max) * 100}%`, height: '100%', background: '#F97316', borderRadius: 6, transition: 'width 0.3s' }} />
+          </div>
+          <div style={{ width: 80, fontSize: 13, fontWeight: 800, color: 'var(--text)', textAlign: 'right', flexShrink: 0 }}>
+            ${d.total.toFixed(2)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WorkOrderStatusChart({ data }) {
+  const total = data.reduce((s, d) => s + d.count, 0);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {data.map(d => (
+        <div key={d.status} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 90, fontSize: 13, fontWeight: 600, color: 'var(--text)', flexShrink: 0 }}>{d.label}</div>
+          <div style={{ flex: 1, background: 'var(--bg)', borderRadius: 6, height: 10, overflow: 'hidden' }}>
+            <div style={{ width: total > 0 ? `${(d.count / total) * 100}%` : '0%', height: '100%', background: d.color, borderRadius: 6, transition: 'width 0.3s' }} />
+          </div>
+          <div style={{ width: 30, fontSize: 13, fontWeight: 800, color: d.color, textAlign: 'right', flexShrink: 0 }}>{d.count}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RevenueChart({ data }) {
+  const [hovered, setHovered] = useState(null);
+  if (data.length === 0) {
+    return <div style={{ textAlign: 'center', color: 'var(--text3)', fontSize: 13, padding: '32px 0' }}>No revenue data yet.</div>;
+  }
+  const max = Math.max(...data.map(d => d.revenue));
+  const chartHeight = 180;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: chartHeight + 32, paddingTop: 8, position: 'relative' }}>
+      {data.map((d, i) => {
+        const barH = max > 0 ? Math.max((d.revenue / max) * chartHeight, 4) : 4;
+        const isHov = hovered === i;
+        return (
+          <div
+            key={d.name}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'default' }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {isHov && (
+              <div style={{
+                position: 'absolute', top: 0,
+                background: '#111827', color: '#fff',
+                borderRadius: 8, padding: '5px 10px',
+                fontSize: 12, fontWeight: 700,
+                pointerEvents: 'none', whiteSpace: 'nowrap',
+              }}>
+                {d.name}: ${d.revenue.toFixed(2)}
+              </div>
+            )}
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: chartHeight }}>
+              <div style={{
+                width: '70%', height: barH,
+                background: isHov ? '#ea6700' : '#F97316',
+                borderRadius: '6px 6px 0 0',
+                transition: 'background 0.15s, height 0.2s',
+              }} />
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+              {d.name}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function OwnerDashboard() {
   const [workOrders, setWorkOrders] = useState([]);
   const [clients, setClients] = useState([]);
@@ -26,6 +159,9 @@ export default function OwnerDashboard() {
   const paidInvoices = invoices.filter(i => i.isPaid);
   const unpaidInvoices = invoices.filter(i => !i.isPaid);
   const totalRevenue = paidInvoices.reduce((sum, i) => sum + (i.amount ?? 0), 0);
+  const monthlyRevenue = buildMonthlyRevenue(paidInvoices);
+  const topClients = buildTopClients(paidInvoices);
+  const workOrderStatuses = buildWorkOrdersByStatus(workOrders);
 
   const kpis = [
     { label: 'Total Revenue',   value: `$${totalRevenue.toFixed(2)}`, color: 'var(--accent)',  badge: `${paidInvoices.length} paid` },
@@ -67,89 +203,33 @@ export default function OwnerDashboard() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16 }}>
+      {/* Revenue Chart */}
+      <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', padding: '20px 24px', marginBottom: 24 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 16 }}>
+          Monthly Revenue
+        </div>
+        <RevenueChart data={monthlyRevenue} />
+      </div>
 
-        {/* Recent Invoices */}
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 10 }}>
-            Recent Invoices
+      {/* Bottom row: Top Clients + Work Orders by Status */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+        <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', padding: '20px 24px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 16 }}>
+            Top Clients by Spending
           </div>
-          <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['#', 'Client', 'Amount', 'Status'].map(h => (
-                    <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {invoices.slice(0, 6).map((inv, i) => (
-                  <tr key={inv.id} style={{ borderBottom: i < 5 ? '1px solid var(--border)' : 'none' }}>
-                    <td style={{ padding: '12px 14px', fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>
-                      #{inv.id}
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: 13 }}>
-                      {inv.clientFirstName} {inv.clientLastName}
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 800 }}>
-                      ${inv.amount?.toFixed(2)}
-                    </td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <span style={{
-                        background: inv.isPaid ? 'var(--green-bg)' : 'var(--yellow-bg)',
-                        color: inv.isPaid ? 'var(--green)' : 'var(--yellow)',
-                        borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700,
-                      }}>
-                        {inv.isPaid ? 'Paid' : 'Pending'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <TopClientsChart data={topClients} />
         </div>
 
-        {/* Workers */}
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 10 }}>
-            Workers
+        <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', padding: '20px 24px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 16 }}>
+            Work Orders by Status
           </div>
-          <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-            {workers.map((w, i) => (
-              <div key={w.id} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '13px 16px',
-                borderBottom: i < workers.length - 1 ? '1px solid var(--border)' : 'none',
-              }}>
-                <div style={{
-                  width: 38, height: 38, borderRadius: '50%',
-                  background: w.role === 'OWNER' ? 'var(--accent)' : 'var(--blue)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 800, color: '#fff', flexShrink: 0,
-                }}>
-                  {w.firstName?.[0]}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{w.firstName} {w.lastName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text2)' }}>{w.role}</div>
-                </div>
-                <span style={{
-                  background: w.isActive ? 'var(--green-bg)' : 'var(--red-bg)',
-                  color: w.isActive ? 'var(--green)' : 'var(--red)',
-                  borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700,
-                }}>
-                  {w.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-            ))}
-          </div>
+          <WorkOrderStatusChart data={workOrderStatuses} />
         </div>
 
       </div>
+
     </OwnerLayout>
   );
 }

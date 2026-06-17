@@ -3,12 +3,12 @@ import ClientLayout from '../../components/ClientLayout';
 import api from '../../api/axios';
 
 const SERVICES = [
-  { key: 'mali-servis',   label: 'Minor Service',    price: 'from $60',  icon: '🔧' },
-  { key: 'veliki-servis', label: 'Major Service',    price: 'from $140', icon: '⚙️' },
-  { key: 'gume',          label: 'Tires / Wheels',   price: 'from $12',  icon: '🔄' },
-  { key: 'dijagnostika',  label: 'Diagnostics',      price: 'from $20',  icon: '🔍' },
-  { key: 'kocioni',       label: 'Brake System',     price: 'from $35',  icon: '🪛' },
-  { key: 'ostalo',        label: 'Other',            price: 'by quote',  icon: '📋' },
+  { key: 'mali-servis',   label: 'Minor Service',    price: 'from $60'  },
+  { key: 'veliki-servis', label: 'Major Service',    price: 'from $140' },
+  { key: 'gume',          label: 'Tires / Wheels',   price: 'from $12'  },
+  { key: 'dijagnostika',  label: 'Diagnostics',      price: 'from $20'  },
+  { key: 'kocioni',       label: 'Brake System',     price: 'from $35'  },
+  { key: 'ostalo',        label: 'Other',            price: 'by quote'  },
 ];
 
 const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
@@ -259,7 +259,6 @@ export default function ClientAppointments() {
                   transition: 'all 0.15s',
                 }}
               >
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{s.icon}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{s.label}</div>
                 <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 3 }}>{s.price}</div>
               </div>

@@ -19,6 +19,7 @@ export default function WorkOrders() {
     const navigate = useNavigate();
     const [workOrders, setWorkOrders] = useState([]);
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [apptSortAsc, setApptSortAsc] = useState(true);
 
     useEffect(() => {
         Promise.all([
@@ -53,9 +54,20 @@ export default function WorkOrders() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['ID', 'Client', 'Vehicle', 'Appointment', 'Note', ''].map(h => (
+                {['ID', 'Client', 'Vehicle'].map(h => (
                     <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {h}
+                      {h}
+                    </th>
+                ))}
+                <th
+                  onClick={() => setApptSortAsc(p => !p)}
+                  style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                >
+                  Appointment {apptSortAsc ? '↑' : '↓'}
+                </th>
+                {['Note', ''].map(h => (
+                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {h}
                     </th>
                 ))}
                 </tr>
@@ -68,13 +80,16 @@ export default function WorkOrders() {
                     </td>
                 </tr>
                 )}
-                {appointments.map((a, i) => (
+                {[...appointments].sort((a, b) => apptSortAsc
+                    ? new Date(a.scheduledAt) - new Date(b.scheduledAt)
+                    : new Date(b.scheduledAt) - new Date(a.scheduledAt)
+                ).map((a, i) => (
                 <tr key={a.id} style={{ borderBottom: i < appointments.length - 1 ? '1px solid var(--border)' : 'none' }}>
                     <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>#{a.id}</td>
                     <td style={{ padding: '14px 16px', fontSize: 14, color: 'var(--text)' }}>{a.clientFirstName} {a.clientLastName}</td>
                     <td style={{ padding: '14px 16px', fontSize: 14, color: 'var(--text)' }}>{a.vehicleBrand} {a.vehicleModel}</td>
                     <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text2)' }}>
-                    {new Date(a.scheduledAt).toLocaleString('en-GB')}
+                      {new Date(a.scheduledAt).toLocaleString('en-GB')}
                     </td>
                     <td style={{ padding: '14px 16px', fontSize: 13, color: 'var(--text2)' }}>{a.note ?? '—'}</td>
                     <td style={{ padding: '14px 16px', textAlign: 'right' }}>

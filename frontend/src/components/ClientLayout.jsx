@@ -8,7 +8,7 @@ const navItems = [
   { to: '/client/dashboard', label: 'Dashboard' },
   { to: '/client/appointments', label: 'Appointments' },
   { to: '/client/invoices', label: 'Invoices' },
-  { to: '/client/orders', label: 'Ordering Parts' },
+  { to: '/client/orders', label: 'Parts' },
   { to: '/client/status', label: 'Vehicle Status' },
 ];
 
