@@ -3,12 +3,30 @@ import ClientLayout from '../../components/ClientLayout';
 import VehicleAddForm from './VehicleAddForm';
 import api from '../../api/axios';
 
+function BrandLogo({ brand }) {
+  const [failed, setFailed] = useState(false);
+  const slug = brand?.toLowerCase().replace(/\s+/g, '-') ?? '';
+  if (!failed && slug) {
+    return (
+      <img
+        src={`/carlogos/${slug}.png`}
+        alt={brand}
+        onError={() => setFailed(true)}
+        style={{ width: 36, height: 36, objectFit: 'contain' }}
+      />
+    );
+  }
+  return <span style={{ fontSize: 24 }}>🚗</span>;
+}
+
 export default function ClientDashboard() {
   const [vehicles, setVehicles] = useState([]);
+  const [workOrders, setWorkOrders] = useState([]);
   const [clientId, setClientId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAdd, setShowAdd] = useState(false);
+  const [expandedVehicleId, setExpandedVehicleId] = useState(null);
 
   const [unpaidAmount, setUnpaidAmount] = useState(0);
   const [completedServices, setCompletedServices] = useState(0);
@@ -34,6 +52,7 @@ export default function ClientDashboard() {
       const spent = invoicesRes.data.filter(i => i.isPaid).reduce((sum, i) => sum + (i.amount ?? 0), 0);
       setTotalSpent(spent);
 
+      setWorkOrders(ordersRes.data);
       setCompletedServices(ordersRes.data.filter(wo => wo.status === 'COMPLETED').length);
 
       const today = new Date();
@@ -134,37 +153,75 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            {vehicles.map(v => (
-              <div key={v.id} style={{
-                background: 'var(--card)', borderRadius: 16,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                padding: '20px 24px',
-                display: 'flex', alignItems: 'center', gap: 20,
-              }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 12,
-                  background: 'var(--bg)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24, flexShrink: 0,
-                }}>
-                  🚗
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>
-                    {v.brand} {v.model} {v.year}
+            {vehicles.map(v => {
+              const isExpanded = expandedVehicleId === v.id;
+              const history = workOrders
+                .filter(wo => wo.vehicleId === v.id && (wo.status === 'COMPLETED' || wo.status === 'CANCELLED'))
+                .sort((a, b) => new Date(b.closedAt ) - new Date(a.closedAt));
+              return (
+                <div key={v.id} style={{ background: 'var(--card)', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                  <div
+                    onClick={() => setExpandedVehicleId(isExpanded ? null : v.id)}
+                    style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20, cursor: 'pointer' }}
+                  >
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <BrandLogo brand={v.brand} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>
+                        {v.brand} {v.model} {v.year}
+                      </div>
+                      <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 4 }}>
+                        {v.licensePlate} - {v.mileage?.toLocaleString()} km - VIN: {v.vin}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', marginRight: 12 }}>
+                      <div style={{ fontSize: 12, color: 'var(--text3)' }}>Registration expires</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginTop: 2 }}>{v.registrationExpiry ?? '—'}</div>
+                    </div>
+                    <div style={{ color: 'var(--text3)', fontSize: 18, transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                      ▾
+                    </div>
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 4 }}>
-                    {v.licensePlate} · {v.mileage?.toLocaleString()} km · VIN: {v.vin}
-                  </div>
+
+                  {isExpanded && (
+                    <div style={{ borderTop: '1px solid var(--border)', padding: '16px 24px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 12 }}>
+                        Service History ({history.length})
+                      </div>
+                      {history.length === 0 ? (
+                        <div style={{ fontSize: 13, color: 'var(--text3)', padding: '8px 0' }}>No service history for this vehicle.</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {history.map(wo => (
+                            <div key={wo.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '10px 14px', background: 'var(--bg)', borderRadius: 10 }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
+                                  {wo.description || `Work Order #${wo.id}`}
+                                </div>
+                                <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
+                                  {wo.closedAt ? new Date(wo.closedAt).toLocaleDateString('en-GB') : wo.openedAt ? new Date(wo.openedAt).toLocaleDateString('en-GB') : '—'}
+                                </div>
+                              </div>
+                              {wo.total != null && (
+                                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>${wo.total.toFixed(2)}</div>
+                              )}
+                              <span style={{
+                                background: wo.status === 'COMPLETED' ? 'var(--green-bg)' : 'var(--red-bg)',
+                                color: wo.status === 'COMPLETED' ? 'var(--green)' : 'var(--red)',
+                                borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700,
+                              }}>
+                                {wo.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>Registration expires</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginTop: 2 }}>
-                    {v.registrationExpiry ?? '—'}
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {!showAdd && (
               <button

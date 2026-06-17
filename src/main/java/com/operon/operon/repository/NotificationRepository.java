@@ -9,5 +9,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByClient_Id(Long clientId);
     List<Notification> findByClient_IdAndIsDelivered(Long clientId, Boolean isDelivered);
+    boolean existsByClient_IdAndContent(Long clientId, String content);
 
 }

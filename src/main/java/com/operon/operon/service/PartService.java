@@ -3,6 +3,7 @@ package com.operon.operon.service;
 import com.operon.operon.dto.PartCreateRequest;
 import com.operon.operon.dto.PartDTO;
 import com.operon.operon.model.Part;
+import com.operon.operon.repository.OrderItemRepository;
 import com.operon.operon.repository.PartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

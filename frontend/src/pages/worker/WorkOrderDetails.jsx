@@ -57,7 +57,7 @@ export default function WorkOrderDetails() {
           cursor: 'pointer', marginBottom: 20,
         }}
       >
-        ← Back
+         Back
       </button>
 
       <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 24 }}>
