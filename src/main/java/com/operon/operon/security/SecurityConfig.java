@@ -49,7 +49,8 @@ public class SecurityConfig {
                         "/api/work-orders/**", "/api/order-items/**",
                         "/api/parts/**",      "/api/service-types/**",
                         "/api/dashboard/**",  "/api/invoices/**",
-                        "/api/clients/**",    "/api/appointments/**"
+                        "/api/clients/**",    "/api/appointments/**",
+                        "/api/ai/**"
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
@@ -59,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/worker/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/clients").permitAll()
                         .requestMatchers("/api/work-orders/**","/api/appointments/**").hasAnyRole("MECHANIC", "OWNER")
+                        .requestMatchers("/api/ai/**").hasAnyRole("MECHANIC", "OWNER")
                         .requestMatchers(
                                 "/api/order-items/**",
                                 "/api/parts/**", "/api/service-types/**"
@@ -82,7 +84,7 @@ public class SecurityConfig {
 
         http.securityMatcher(
                         "/auth/client/**",
-                        "/api/me",
+                        "/api/me/**",
                         "/api/vehicles/**",
                         "/api/notifications/**",
                         "/api/client-orders/**",
@@ -102,7 +104,7 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/client/login").permitAll()
+                        .requestMatchers("/auth/client/login", "/auth/client/google").permitAll()
                         .requestMatchers("/api/stripe/webhook").permitAll()
                         .anyRequest().authenticated()
                 ).addFilterBefore(clientJwtFilter, UsernamePasswordAuthenticationFilter.class);

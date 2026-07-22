@@ -40,6 +40,11 @@ public class Vehicle {
     @Column(nullable = false)
     private LocalDate registrationExpiry;
 
+    @Column private String image1;
+    @Column private String image2;
+    @Column private String image3;
+    @Column private String image4;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_client", nullable = false)
     private Client client;

@@ -1,21 +1,18 @@
 package com.operon.operon.dto;
 
-import com.operon.operon.model.ClientType;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter@Getter@AllArgsConstructor@NoArgsConstructor
-public class ClientDTO {
-    private Long id;
-    private String firstName;
-    private String lastName;
-    private String username;
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+public class ClientProfileUpdateRequest {
+    @NotBlank private String firstName;
+    @NotBlank private String lastName;
     private String phone;
     private String email;
-    private ClientType clientType;
-    private String profileImageUrl;
+    private String password;
     private String address;
     private String city;
     private String postalCode;

@@ -349,9 +349,7 @@ export default function ClientAppointments() {
           >
             Confirm Booking
           </button>
-          <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', marginTop: 8 }}>
-            Confirmation will be sent via email and SMS
-          </div>
+        
         </div>
       </div>
 

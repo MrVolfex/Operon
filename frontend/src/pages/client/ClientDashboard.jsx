@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/ClientLayout';
-import VehicleAddForm from './VehicleAddForm';
 import api from '../../api/axios';
 
 function BrandLogo({ brand }) {
@@ -20,12 +20,12 @@ function BrandLogo({ brand }) {
 }
 
 export default function ClientDashboard() {
+  const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
   const [workOrders, setWorkOrders] = useState([]);
   const [clientId, setClientId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showAdd, setShowAdd] = useState(false);
   const [expandedVehicleId, setExpandedVehicleId] = useState(null);
 
   const [unpaidAmount, setUnpaidAmount] = useState(0);
@@ -144,12 +144,24 @@ export default function ClientDashboard() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {vehicles.length === 0 && !showAdd && (
+            {vehicles.length === 0 && (
               <div style={{
                 background: 'var(--card)', borderRadius: 16,
-                padding: 32, textAlign: 'center', color: 'var(--text2)',
+                padding: '40px 32px', textAlign: 'center',
               }}>
-                No vehicles registered.
+                <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 16 }}>
+                  You have no vehicles registered yet.
+                </div>
+                <button
+                  onClick={() => navigate('/client/vehicles')}
+                  style={{
+                    background: 'var(--accent)', color: '#fff',
+                    border: 'none', borderRadius: 10, padding: '10px 24px',
+                    fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                  }}
+                >
+                  Add your first vehicle →
+                </button>
               </div>
             )}
 
@@ -217,46 +229,12 @@ export default function ClientDashboard() {
                           ))}
                         </div>
                       )}
+
                     </div>
                   )}
                 </div>
               );
             })}
-
-            {!showAdd && (
-              <button
-                onClick={() => setShowAdd(true)}
-                style={{
-                  background: 'var(--card)', borderRadius: 12,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                  padding: '12px 20px',
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  border: '2px dashed var(--border)',
-                  cursor: 'pointer', width: '100%',
-                }}
-              >
-                <span style={{
-                  width: 28, height: 28, borderRadius: '50%',
-                  background: 'var(--accent-light)', color: 'var(--accent)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, fontWeight: 700, flexShrink: 0,
-                }}>+</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>
-                  Add Vehicle
-                </span>
-              </button>
-            )}
-
-            {showAdd && (
-              <VehicleAddForm
-                clientId={clientId}
-                onSuccess={vehicle => {
-                  setVehicles(prev => [...prev, vehicle]);
-                  setShowAdd(false);
-                }}
-                onCancel={() => setShowAdd(false)}
-              />
-            )}
           </div>
         </>
       )}
