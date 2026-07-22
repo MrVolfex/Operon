@@ -8,6 +8,7 @@ export default function ClientProfile() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [show, setShow] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     api.get('/api/me').then(res => setProfile(res.data));
@@ -30,9 +31,13 @@ export default function ClientProfile() {
           border: 'none', cursor: 'pointer',
           fontSize: 13, fontWeight: 800,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden', padding: 0,
         }}
       >
-        {profile.firstName?.[0]}{profile.lastName?.[0]}
+        {profile.profileImageUrl && !imgError
+          ? <img src={profile.profileImageUrl} alt="avatar" onError={() => setImgError(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : profile.username?.[0]?.toUpperCase() ?? '?'
+        }
       </button>
 
       {show && (
@@ -54,6 +59,28 @@ export default function ClientProfile() {
               </div>
               
             </div>
+            <button
+              onClick={() => { setShow(false); navigate('/client/profile'); }}
+              style={{
+                width: '100%', padding: '12px 16px', background: 'none',
+                border: 'none', textAlign: 'left', cursor: 'pointer',
+                fontSize: 13, fontWeight: 600, color: 'var(--text)',
+                borderBottom: '1px solid var(--border)',
+              }}
+            >
+              View Profile
+            </button>
+            <button
+              onClick={() => { setShow(false); navigate('/client/vehicles'); }}
+              style={{
+                width: '100%', padding: '12px 16px', background: 'none',
+                border: 'none', textAlign: 'left', cursor: 'pointer',
+                fontSize: 13, fontWeight: 600, color: 'var(--text)',
+                borderBottom: '1px solid var(--border)',
+              }}
+            >
+              My Vehicles
+            </button>
             <button
               onClick={handleLogout}
               style={{

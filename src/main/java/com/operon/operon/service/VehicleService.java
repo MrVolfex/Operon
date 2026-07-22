@@ -92,6 +92,20 @@ public class VehicleService {
         return toDTO(vehicle);
     }
 
+    public VehicleDTO updateVehicleImage(Long id, String slot, String imageUrl) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
+        switch (slot) {
+            case "1" -> vehicle.setImage1(imageUrl);
+            case "2" -> vehicle.setImage2(imageUrl);
+            case "3" -> vehicle.setImage3(imageUrl);
+            case "4" -> vehicle.setImage4(imageUrl);
+            default  -> throw new RuntimeException("Invalid slot: " + slot);
+        }
+        vehicleRepository.save(vehicle);
+        return toDTO(vehicle);
+    }
+
     public void deleteVehicle(Long id) {
         if (!vehicleRepository.existsById(id)) {
             throw new RuntimeException("Vehicle not found with id: " + id);
@@ -110,7 +124,11 @@ public class VehicleService {
                 vehicle.getMileage(),
                 vehicle.getRegistrationDate(),
                 vehicle.getRegistrationExpiry(),
-                vehicle.getClient().getId()
+                vehicle.getClient().getId(),
+                vehicle.getImage1(),
+                vehicle.getImage2(),
+                vehicle.getImage3(),
+                vehicle.getImage4()
         );
     }
 }

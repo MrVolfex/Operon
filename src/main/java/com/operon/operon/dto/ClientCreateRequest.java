@@ -36,4 +36,6 @@ public class ClientCreateRequest {
 
     @NotNull
     private ClientType clientType;
+
+    private String profileImageUrl;
 }

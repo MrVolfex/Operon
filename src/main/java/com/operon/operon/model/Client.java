@@ -26,7 +26,7 @@ public class Client {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false,  unique = true)
+    @Column(unique = true)
     private String phone;
 
     @Column(nullable = false,  unique = true)
@@ -35,4 +35,22 @@ public class Client {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ClientType clientType;
+
+    @Column
+    private String profileImageUrl;
+
+    @Column
+    private String address;
+
+    @Column
+    private String city;
+
+    @Column
+    private String postalCode;
+
+    @Column
+    private String companyName;
+
+    @Column
+    private String pib;
 }

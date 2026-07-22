@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 import java.util.List;
 
 @RestController
@@ -45,6 +47,11 @@ public class VehicleController {
     @PutMapping("/{id}")
     public ResponseEntity<VehicleDTO> updateVehicle(@PathVariable Long id, @RequestBody @Valid VehicleCreateRequest request) {
         return ResponseEntity.ok(vehicleService.updateVehicle(id, request));
+    }
+
+    @PatchMapping("/{id}/images")
+    public ResponseEntity<VehicleDTO> updateVehicleImage(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(vehicleService.updateVehicleImage(id, body.get("slot"), body.get("imageUrl")));
     }
 
     @DeleteMapping("/{id}")

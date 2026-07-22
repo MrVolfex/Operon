@@ -3,8 +3,15 @@ import api from '../../api/axios';
 
 const EMPTY = { licensePlate: '', vin: '', brand: '', model: '', year: '', mileage: '', registrationDate: '', registrationExpiry: '' };
 
+const BRANDS = [
+  'Alfa Romeo', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Bugatti', 'Chevrolet',
+  'Dodge', 'Ferrari', 'Fiat', 'Ford', 'Honda', 'Hyundai', 'Jaguar', 'Jeep', 'Kia',
+  'Lamborghini', 'Land Rover', 'Lexus', 'Maserati', 'Mazda', 'McLaren', 'Mercedes-Benz',
+  'MINI', 'Mitsubishi', 'Nissan', 'Opel', 'Peugeot', 'Porsche', 'Renault', 'Rolls-Royce',
+  'SEAT', 'Skoda', 'Subaru', 'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo',
+];
+
 const fields = [
-  { name: 'brand',              label: 'Brand',               type: 'text',   placeholder: 'Volkswagen' },
   { name: 'model',              label: 'Model',               type: 'text',   placeholder: 'Golf' },
   { name: 'year',               label: 'Year',                type: 'number', placeholder: '2020' },
   { name: 'licensePlate',       label: 'License Plate',       type: 'text',   placeholder: 'BG 123-AB' },
@@ -52,6 +59,27 @@ export default function VehicleAddForm({ clientId, onSuccess, onCancel }) {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
+              Brand
+            </label>
+            <select
+              value={form.brand}
+              onChange={e => setForm(prev => ({ ...prev, brand: e.target.value }))}
+              required
+              style={{
+                width: '100%', padding: '9px 12px', boxSizing: 'border-box',
+                border: '1px solid var(--border)', borderRadius: 10,
+                fontSize: 13, outline: 'none', background: 'var(--bg)', color: 'var(--text)',
+              }}
+            >
+              <option value="" disabled>Select brand...</option>
+              {BRANDS.map(b => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
+
           {fields.map(f => (
             <div key={f.name}>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>

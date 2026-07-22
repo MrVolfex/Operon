@@ -15,6 +15,8 @@ import ClientAppointments from './pages/client/ClientAppointments';
 import ClientOrders from './pages/client/ClientOrders';
 import ClientWorkOrderStatus from './pages/client/ClientWorkOrderStatus';
 import ClientInvoices from './pages/client/ClientInvoices';
+import ClientProfilePage from './pages/client/ClientProfilePage';
+import ClientVehicles from './pages/client/ClientVehicles';
 import WorkOrders from './pages/worker/WorkOrders';
 import WorkOrderDetail from './pages/worker/WorkOrderDetails';
 function ProtectedRoute({ children }) {
@@ -42,6 +44,8 @@ export default function App() {
           <Route path="/client/orders" element={<ProtectedRoute><ClientOrders/></ProtectedRoute>} />
           <Route path="/client/status" element={<ProtectedRoute><ClientWorkOrderStatus/></ProtectedRoute>} />
           <Route path="/client/invoices" element={<ProtectedRoute><ClientInvoices/></ProtectedRoute>} />
+          <Route path="/client/profile" element={<ProtectedRoute><ClientProfilePage/></ProtectedRoute>} />
+          <Route path="/client/vehicles" element={<ProtectedRoute><ClientVehicles/></ProtectedRoute>} />
           <Route path="/worker/work-orders" element={<ProtectedRoute><WorkOrders/></ProtectedRoute>} />
           <Route path="/worker/work-orders/:id" element={<ProtectedRoute><WorkOrderDetail/></ProtectedRoute>} />
 
