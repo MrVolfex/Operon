@@ -14,6 +14,24 @@ export default function Workers() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const [deactivating, setDeactivating] = useState(null);
+  const [confirmId, setConfirmId]       = useState(null);
+
+  const currentUsername = (() => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+      return JSON.parse(atob(token.split('.')[1])).sub;
+    } catch { return null; }
+  })();
+
+  function handleDeactivate(id) {
+    setDeactivating(id);
+    api.delete(`/api/workers/${id}`)
+      .then(() => setWorkers(prev => prev.map(w => w.id === id ? { ...w, isActive: false } : w)))
+      .catch(() => alert('Failed to deactivate worker.'))
+      .finally(() => { setDeactivating(null); setConfirmId(null); });
+  }
 
   useEffect(() => {
     api.get('/api/workers')
@@ -137,7 +155,7 @@ export default function Workers() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Worker', 'Username', 'Email', 'Role', 'Status'].map(h => (
+                {['Worker', 'Username', 'Email', 'Role', 'Status', ''].map(h => (
                   <th key={h} style={{
                     padding: '11px 16px',
                     textAlign: 'left',
@@ -203,10 +221,75 @@ export default function Workers() {
                       {w.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
+                  <td style={{ padding: '13px 16px' }}>
+                    {w.isActive && w.username !== currentUsername && (
+                      <button
+                        onClick={() => setConfirmId(w.id)}
+                        disabled={deactivating === w.id}
+                        style={{
+                          background: '#fff', color: 'var(--text)',
+                          border: '1px solid var(--border)', borderRadius: 10,
+                          padding: '7px 16px', fontSize: 13, fontWeight: 600,
+                          cursor: deactivating === w.id ? 'not-allowed' : 'pointer',
+                          opacity: deactivating === w.id ? 0.6 : 1,
+                          float: 'right',
+                        }}
+                      >
+                        {deactivating === w.id ? '...' : 'Deactivate'}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {confirmId && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+          zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: 'var(--card)', borderRadius: 20, padding: 32,
+            width: 420, maxWidth: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.16)',
+          }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>
+              Deactivate Worker
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24 }}>
+              Are you sure you want to deactivate{' '}
+              <strong style={{ color: 'var(--text)' }}>
+                {workers.find(w => w.id === confirmId)?.firstName} {workers.find(w => w.id === confirmId)?.lastName}
+              </strong>?
+              They will no longer be able to log in.
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setConfirmId(null)}
+                style={{
+                  background: 'var(--bg)', color: 'var(--text)',
+                  border: '1px solid var(--border)', borderRadius: 10,
+                  padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeactivate(confirmId)}
+                disabled={deactivating === confirmId}
+                style={{
+                  background: 'var(--red)', color: '#fff',
+                  border: 'none', borderRadius: 10,
+                  padding: '9px 20px', fontWeight: 700, fontSize: 13,
+                  cursor: deactivating === confirmId ? 'not-allowed' : 'pointer',
+                  opacity: deactivating === confirmId ? 0.7 : 1,
+                }}
+              >
+                {deactivating === confirmId ? 'Deactivating...' : 'Yes, Deactivate'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </OwnerLayout>

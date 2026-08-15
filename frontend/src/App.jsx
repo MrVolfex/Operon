@@ -19,6 +19,8 @@ import ClientProfilePage from './pages/client/ClientProfilePage';
 import ClientVehicles from './pages/client/ClientVehicles';
 import WorkOrders from './pages/worker/WorkOrders';
 import WorkOrderDetail from './pages/worker/WorkOrderDetails';
+import OwnerServiceTypes from './pages/owner/ServiceTypes';
+import WorkerServiceTypes from './pages/worker/ServiceTypes';
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
   return token ? children : <Navigate to="/login" />;
@@ -48,6 +50,8 @@ export default function App() {
           <Route path="/client/vehicles" element={<ProtectedRoute><ClientVehicles/></ProtectedRoute>} />
           <Route path="/worker/work-orders" element={<ProtectedRoute><WorkOrders/></ProtectedRoute>} />
           <Route path="/worker/work-orders/:id" element={<ProtectedRoute><WorkOrderDetail/></ProtectedRoute>} />
+          <Route path="/owner/service-types" element={<ProtectedRoute><OwnerServiceTypes/></ProtectedRoute>} />
+          <Route path="/worker/service-types" element={<ProtectedRoute><WorkerServiceTypes/></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to="/login" />} />
         </Routes>

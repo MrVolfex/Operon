@@ -7,9 +7,10 @@ import ClientProfile from '../pages/client/ClientProfile';
 const navItems = [
   { to: '/client/dashboard', label: 'Dashboard' },
   { to: '/client/appointments', label: 'Appointments' },
+  { to: '/client/status', label: 'Vehicle Status' },
   { to: '/client/invoices', label: 'Invoices' },
   { to: '/client/orders', label: 'Parts' },
-  { to: '/client/status', label: 'Vehicle Status' },
+  
 ];
 
 export default function ClientLayout({ children }) {

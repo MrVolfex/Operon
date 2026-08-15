@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import ClientLayout from '../../components/ClientLayout';
 import api from '../../api/axios';
 
-const SERVICES = [
-  { key: 'mali-servis',   label: 'Minor Service',    price: 'from $60'  },
-  { key: 'veliki-servis', label: 'Major Service',    price: 'from $140' },
-  { key: 'gume',          label: 'Tires / Wheels',   price: 'from $12'  },
-  { key: 'dijagnostika',  label: 'Diagnostics',      price: 'from $20'  },
-  { key: 'kocioni',       label: 'Brake System',     price: 'from $35'  },
-  { key: 'ostalo',        label: 'Other',            price: 'by quote'  },
-];
+function BrandLogo({ brand }) {
+  const [failed, setFailed] = useState(false);
+  const slug = brand?.toLowerCase().replace(/\s+/g, '-') ?? '';
+  if (!failed && slug)
+    return <img src={`/carlogos/${slug}.png`} alt={brand} onError={() => setFailed(true)} style={{ width: 40, height: 40, objectFit: 'contain' }} />;
+  return <span style={{ fontSize: 26 }}>🚗</span>;
+}
+
 
 const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
 
@@ -114,8 +114,9 @@ export default function ClientAppointments() {
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState('');
 
+  const [serviceTypes, setServiceTypes]       = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState('');
-  const [selectedService, setSelectedService] = useState('mali-servis');
+  const [selectedService, setSelectedService] = useState('');
   const [selectedDate, setSelectedDate]       = useState(null);
   const [selectedTime, setSelectedTime]       = useState('');
   const [bookedSlots, setBookedSlots]         = useState([]);
@@ -131,11 +132,14 @@ export default function ClientAppointments() {
       .then(res => Promise.all([
         api.get('/api/my-appointments'),
         api.get(`/api/vehicles/client/${res.data.id}`),
+        api.get('/api/client/service-types'),
       ]))
-      .then(([apptRes, vehRes]) => {
+      .then(([apptRes, vehRes, svcRes]) => {
         setAppointments(apptRes.data);
         setVehicles(vehRes.data);
+        setServiceTypes(svcRes.data);
         if (vehRes.data.length > 0) setSelectedVehicle(String(vehRes.data[0].id));
+        if (svcRes.data.length > 0) setSelectedService(String(svcRes.data[0].id));
       })
       .catch(() => setError('Error loading data.'))
       .finally(() => setLoading(false));
@@ -180,8 +184,8 @@ export default function ClientAppointments() {
     if (!selectedDate)    { setFormError('Please select a date.'); return; }
     if (!selectedTime)    { setFormError('Please select a time slot.'); return; }
 
-    const serviceLabel = SERVICES.find(s => s.key === selectedService)?.label ?? '';
-    const fullNote = serviceLabel + (note ? ` — ${note}` : '');
+    const svc = serviceTypes.find(s => String(s.id) === selectedService);
+    const fullNote = (svc?.type ?? '') + (note ? ` — ${note}` : '');
 
     setSubmitting(true);
     api.post('/api/my-appointments', {
@@ -203,8 +207,8 @@ export default function ClientAppointments() {
   }
 
   const vehObj  = vehicles.find(v => String(v.id) === selectedVehicle);
-  const svcObj  = SERVICES.find(s => s.key === selectedService);
-  const canBook = selectedVehicle && selectedDate && selectedTime;
+  const svcObj  = serviceTypes.find(s => String(s.id) === selectedService);
+  const canBook = selectedVehicle && selectedDate && selectedTime && selectedService;
 
   function fmtDate(d) {
     if (!d) return '—';
@@ -229,41 +233,61 @@ export default function ClientAppointments() {
         <div>
           {/* Vehicle */}
           <div style={sLabel}>Vehicle</div>
-          <select
-            value={selectedVehicle}
-            onChange={e => setSelectedVehicle(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 14px', marginBottom: 24,
-              border: '2px solid var(--border)', borderRadius: 12,
-              fontSize: 14, fontWeight: 600, color: 'var(--text)',
-              background: 'var(--card)', outline: 'none', boxSizing: 'border-box',
-            }}
-          >
-            {vehicles.map(v => (
-              <option key={v.id} value={v.id}>{v.brand} {v.model} {v.year} — {v.licensePlate}</option>
-            ))}
-          </select>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+            {vehicles.map(v => {
+              const sel = String(v.id) === selectedVehicle;
+              return (
+                <div
+                  key={v.id}
+                  onClick={() => setSelectedVehicle(String(v.id))}
+                  style={{
+                    border: `2px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
+                    borderRadius: 14,
+                    padding: '14px 18px',
+                    cursor: 'pointer',
+                    background: sel ? 'var(--accent-light)' : 'var(--card)',
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    transition: 'all 0.15s',
+                    minWidth: 160,
+                  }}
+                >
+                  <BrandLogo brand={v.brand} />
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: sel ? 'var(--accent)' : 'var(--text)' }}>
+                      {v.brand} {v.model}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
+                      {v.licensePlate}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
           {/* Service type */}
           <div style={sLabel}>Service Type</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
-            {SERVICES.map(s => (
-              <div
-                key={s.key}
-                onClick={() => setSelectedService(s.key)}
-                style={{
-                  border: `2px solid ${selectedService === s.key ? 'var(--accent)' : 'var(--border)'}`,
-                  borderRadius: 14, padding: '16px 12px',
-                  cursor: 'pointer', textAlign: 'center',
-                  background: selectedService === s.key ? 'var(--accent-light)' : 'var(--card)',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{s.label}</div>
-                <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 3 }}>{s.price}</div>
-              </div>
+          <select
+            value={selectedService}
+            onChange={e => setSelectedService(e.target.value)}
+            style={{
+              width: '100%', padding: '12px 14px', marginBottom: 24,
+              border: '2px solid var(--border)', borderRadius: 12,
+              fontSize: 14, fontWeight: 600, color: 'var(--text)',
+              background: 'var(--card)', outline: 'none', cursor: 'pointer',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 14px center',
+              paddingRight: 36,
+            }}
+          >
+            {serviceTypes.map(s => (
+              <option key={s.id} value={String(s.id)}>
+                {s.type} — from ${s.price} ({s.duration} min)
+              </option>
             ))}
-          </div>
+          </select>
 
           {/* Calendar */}
           <div style={sLabel}>Select Date</div>
@@ -320,7 +344,7 @@ export default function ClientAppointments() {
 
           {[
             { label: 'Vehicle', val: vehObj ? `${vehObj.brand} ${vehObj.model}` : '—' },
-            { label: 'Service', val: svcObj?.label ?? '—' },
+            { label: 'Service', val: svcObj?.type ?? '—' },
             { label: 'Date',    val: fmtDate(selectedDate) },
             { label: 'Time',    val: selectedTime || '—' },
             { label: 'Workshop', val: 'Operon Service' },
@@ -333,7 +357,7 @@ export default function ClientAppointments() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
             <span style={{ fontSize: 13, color: 'var(--text2)' }}>Est. Price</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{svcObj?.price ?? '—'}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{svcObj ? `$${svcObj.price}` : '—'}</span>
           </div>
 
           <button
@@ -365,7 +389,7 @@ export default function ClientAppointments() {
 
             <div style={{ background: 'var(--bg)', borderRadius: 12, padding: 16, marginBottom: 20 }}>
               {[
-                { label: 'Service', val: svcObj?.label },
+                { label: 'Service', val: svcObj?.type ?? '—' },
                 { label: 'Date',    val: fmtDate(selectedDate) },
                 { label: 'Time',    val: selectedTime },
                 { label: 'Vehicle', val: vehObj ? `${vehObj.brand} ${vehObj.model} · ${vehObj.licensePlate}` : '—' },
@@ -378,7 +402,7 @@ export default function ClientAppointments() {
               <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
                 <span style={{ fontSize: 13, color: 'var(--text2)' }}>Est. Price</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{svcObj?.price}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{svcObj ? `$${svcObj.price}` : '—'}</span>
               </div>
             </div>
 
@@ -393,13 +417,13 @@ export default function ClientAppointments() {
               disabled={submitting}
               style={{ width: '100%', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 12, padding: 14, fontSize: 15, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}
             >
-              {submitting ? 'Zakazivanje...' : '✓ Potvrdi zakazivanje'}
+              {submitting ? 'Booking...' : '✓ Confirm Booking'}
             </button>
             <button
               onClick={() => setShowConfirm(false)}
               style={{ width: '100%', background: 'var(--bg)', color: 'var(--text)', border: 'none', borderRadius: 12, padding: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 10 }}
             >
-              Nazad
+              Back
             </button>
           </div>
         </div>
@@ -420,7 +444,7 @@ export default function ClientAppointments() {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Termin zakazan!</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Appointment Booked!</div>
             <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24 }}>
               {bookedInfo?.service} · {fmtDate(bookedInfo?.date)} · {bookedInfo?.time}
             </div>
@@ -428,7 +452,7 @@ export default function ClientAppointments() {
               onClick={() => setShowSuccess(false)}
               style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 32px', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
             >
-              Odlično
+              Done
             </button>
           </div>
         </div>
@@ -436,12 +460,12 @@ export default function ClientAppointments() {
 
       {/* ── Appointments list ── */}
       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 12 }}>
-        Moji termini ({appointments.length})
+        My Appointments ({appointments.length})
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {appointments.length === 0 && (
           <div style={{ background: 'var(--card)', borderRadius: 16, padding: 32, textAlign: 'center', color: 'var(--text2)' }}>
-            Nema zakazanih termina.
+            No appointments scheduled.
           </div>
         )}
         {appointments.map(a => (
@@ -458,7 +482,7 @@ export default function ClientAppointments() {
                 </span>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4 }}>
-                {a.scheduledAt ? new Date(a.scheduledAt).toLocaleString('sr-Latn') : '—'}
+                {a.scheduledAt ? new Date(a.scheduledAt).toLocaleString('en-GB') : '—'}
                 {a.note && <span style={{ marginLeft: 8 }}>· {a.note}</span>}
               </div>
             </div>
@@ -470,7 +494,7 @@ export default function ClientAppointments() {
                 onClick={() => handleCancel(a.id)}
                 style={{ background: 'var(--red-bg)', color: 'var(--red)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
               >
-                Otkaži
+                Cancel
               </button>
             )}
           </div>

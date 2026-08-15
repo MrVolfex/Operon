@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" role="img">
+  <title>Operon ikona</title>
+  <desc>Operon standalone ikona — favicon i app ikona</desc>
+
+  <rect x="0" y="0" width="56" height="56" rx="14" fill="#111827"/>
+  <circle cx="28" cy="28" r="15" fill="none" stroke="#F97316" stroke-width="3.5"/>
+  <line x1="28" y1="28" x2="28" y2="13.5" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="28" cy="13" r="4" fill="#F97316"/>
+  <circle cx="28" cy="28" r="2.8" fill="#F97316"/>
+</svg>

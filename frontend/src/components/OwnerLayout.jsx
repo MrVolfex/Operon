@@ -7,6 +7,7 @@ const navItems = [
   { to: '/owner/clients', label: 'Clients' },
   { to: '/owner/appointments', label: 'Appointments' },
   { to: '/owner/invoices', label: 'Invoices' },
+  { to: '/owner/service-types', label: 'Service Types' },
 ];
 
 export default function OwnerLayout({ children }) {
