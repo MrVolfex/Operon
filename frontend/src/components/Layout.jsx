@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { to: '/worker/dashboard', label: 'Dashboard' },
+  { to: '/worker/appointments', label: 'Appointments' },
   { to: '/worker/work-orders', label: 'Work Orders' },
   { to: '/worker/parts', label: 'Parts' },
-  { to: '/worker/appointments', label: 'Appointments' },
+  { to: '/worker/service-types', label: 'Service Types' },
 ];
 
 export default function Layout({ children }) {

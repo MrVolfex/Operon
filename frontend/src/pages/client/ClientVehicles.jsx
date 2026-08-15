@@ -105,7 +105,17 @@ export default function ClientVehicles() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{v.brand} {v.model} {v.year}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 3 }}>{v.licensePlate} · {v.mileage?.toLocaleString()} km · VIN: {v.vin}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text3)' }}>Registration: </span>{v.licensePlate}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text3)' }}>Mileage: </span>{v.mileage?.toLocaleString()} km
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text2)' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text3)' }}>VIN: </span>{v.vin}
+                    </div>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right', marginRight: 8 }}>
                   <div style={{ fontSize: 11, color: 'var(--text3)' }}>Reg. expires</div>

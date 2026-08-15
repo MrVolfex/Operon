@@ -50,7 +50,7 @@ public class SecurityConfig {
                         "/api/parts/**",      "/api/service-types/**",
                         "/api/dashboard/**",  "/api/invoices/**",
                         "/api/clients/**",    "/api/appointments/**",
-                        "/api/ai/**"
+                        "/api/ai/**",         "/api/email/**"
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
@@ -63,12 +63,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/ai/**").hasAnyRole("MECHANIC", "OWNER")
                         .requestMatchers(
                                 "/api/order-items/**",
-                                "/api/parts/**", "/api/service-types/**"
+                                "/api/parts/**"
                         ).hasRole("MECHANIC")
+                        .requestMatchers("/api/service-types/**").hasAnyRole("MECHANIC", "OWNER")
                         .requestMatchers(
                                 "/api/dashboard/**", "/api/invoices/**",
                                 "/api/clients/**", "/api/appointments/**",
-                                "/api/workers/**"
+                                "/api/workers/**", "/api/email/**"
                         ).hasRole("OWNER")
                         .anyRequest().authenticated()
                 ).addFilterBefore(workerJwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -91,6 +92,7 @@ public class SecurityConfig {
                         "/api/my-appointments/**",
                         "/api/my-work-orders/**",
                         "/api/my-invoices/**",
+                        "/api/client/service-types",
                         "/api/stripe/pay/**",
                         "/api/stripe/pay-order/**",
                         "/api/stripe/confirm",
